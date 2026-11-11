@@ -155,7 +155,7 @@ Rules inside every address check service:
 
 The caller decides what to do with the result. A warehouse application, for example, holds the order on `INVALID` or `NOT_CHECKED`.
 
-The caller passes the carrier account. It is the account of the order's store shipping method.
+The caller passes the carrier account. It is the business's address check account, which may belong to a different carrier than the order's shipping method.
 
 ### What a label service writes
 

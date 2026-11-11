@@ -29,13 +29,13 @@ A carrier account is the business's account with a carrier. The carrier bills th
 
 ### Check a ship-to address
 
-6. Company checks an order's ship-to address with the carrier when the order is recorded. It uses the account of the order's store shipping method.
+6. Company checks an order's ship-to address with the carrier when the order is recorded. It uses the business's address check account, whatever carrier ships the order.
 7. Carrier answers that the address is good, that it cannot be delivered, or that it has a corrected form.
 8. Company records the answer on the order.
 9. If the address cannot be delivered, Company holds the order from picking.
 10. If the carrier cannot be reached, Company records that the address was not checked, and holds the order.
-11. Customer Service fixes the address. Company checks it again.
-12. Company checks held addresses again on a schedule, and releases an order when its address now passes.
+11. Customer Service fixes the address. Company releases the hold, and trusts the fix.
+12. Company checks held addresses again every few minutes, and releases an order when its address now passes.
 
 ### Get a label
 
@@ -60,6 +60,7 @@ A carrier account is the business's account with a carrier. The carrier bills th
 
 - Each store shipping method uses one carrier account.
 - A secret is never shown again after it is saved. It can only be replaced.
+- One carrier account checks addresses for orders of every carrier, such as a regional carrier with no address check of its own.
 - An address check never changes the order's address by itself. A corrected form is shown, and a person decides.
 - A different spelling of the city alone never fails an address, such as "Port St. Lucie" and "Port Saint Lucie".
 - Spaces are taken out of a postal code before the check, such as `84601- 1234` to `84601-1234`.
@@ -82,7 +83,7 @@ A carrier account is the business's account with a carrier. The carrier bills th
 | 6 | City spelled differently | Order 1052 ships to Port St. Lucie. FedEx says Port Saint Lucie | Address passes |
 | 7 | Corrected form | FedEx adds the ZIP+4 to order 1053's postal code | Address passes. The corrected form is recorded |
 | 8 | Carrier down | FedEx does not answer for order 1054 | Not checked. Order held |
-| 9 | Address fixed | Customer Service fixes order 1051's postal code to 84601 | Address passes. Hold released |
+| 9 | Address fixed | Customer Service fixes order 1051's postal code to 84601 | Hold released at once |
 | 10 | Scheduled check | FedEx is back up for order 1054 | Address passes on the next run. Hold released |
 | 11 | One box | Shipment 10310, FedEx Ground, one box of 2.4 lb | One label and tracking number |
 | 12 | Two boxes | Shipment 10320 has two boxes | Two labels, one tracking number for each box |
@@ -107,7 +108,6 @@ OFBiz order holds and the warehouse application's holds work differently, so the
 - Customs papers for international shipments.
 - Carriers other than FedEx.
 
-## Open questions
+## Open question
 
 - Can one business have two accounts with the same carrier, such as one per store?
-- When Customer Service fixes an address, should a failed check put the hold back, or should the person's fix be trusted?

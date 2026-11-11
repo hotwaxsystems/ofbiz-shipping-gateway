@@ -152,14 +152,26 @@ Write a skill in coding-agent-for-ofbiz. It walks a coding agent through tasks 5
 
 Done when the skill is merged in coding-agent-for-ofbiz.
 
-### 13. Test the skill with a second carrier
+### 13. Test the skill with UPS
+
+UPS is the second carrier. It is built only through the skill.
 
 Do:
-- Pick a second carrier.
-- Give a coding agent only the skill and the carrier's API documents.
+- Give a coding agent only the skill and UPS's API documents. It does tasks 5 to 11, with 7a, for UPS.
 - Note every place the agent needed help, then fix the skill.
+- Check the result against what earlier HotWax UPS work learned. The skill passes only if the agent handled each point without being told:
+  - The address check uses UPS's city, state and ZIP check, without the street.
+  - An address passes when UPS keeps the same state and 5-digit ZIP. A ZIP+4 extension is ignored.
+  - No suggested address from UPS means the address fails.
+  - Names and addresses are escaped in the JSON, such as "O'Fallon".
+  - An empty optional field is left out of the request.
+  - UPS errors are read from its list of codes and messages.
+  - The login token is kept for its full life, about 4 hours.
+  - UPS web addresses carry an API version and are kept in settings.
+  - Saturday delivery is set when the order's estimated delivery date is a Saturday.
+  - No UPS key is written in seed data.
 
-Done when the second carrier passes its tests with no help beyond the skill.
+Done when UPS passes its tests with no help beyond the skill, and the skill covers every point above.
 
 ## Order
 

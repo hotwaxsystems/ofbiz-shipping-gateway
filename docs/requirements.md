@@ -62,7 +62,7 @@ A carrier account is the business's account with a carrier. The carrier bills th
 - A secret is never shown again after it is saved. It can only be replaced.
 - An address check never changes the order's address by itself. A corrected form is shown, and a person decides.
 - A different spelling of the city alone never fails an address, such as "Port St. Lucie" and "Port Saint Lucie".
-- Spaces are taken out of a postal code before the check, such as `06067- 4809` to `06067-4809`.
+- Spaces are taken out of a postal code before the check, such as `84601- 1234` to `84601-1234`.
 - "Not checked" is recorded apart from "cannot be delivered", so a carrier outage is never taken for a bad address.
 - A test-mode label is never used to ship.
 - A label is voided only before the shipment ships.

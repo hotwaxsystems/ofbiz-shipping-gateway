@@ -20,6 +20,8 @@ These come from earlier FedEx integrations at HotWax, and from the fixes they ne
 - Never fall back to a default carrier service. A missing service code is an error.
 - Keep the login token for each carrier account. Clear it when the account changes.
 - Every carrier error has one shape: the carrier's status code and its reason.
+- A carrier outage during an address check is `NOT_CHECKED`, never `INVALID`.
+- A different city spelling alone never fails an address.
 - Never write a secret or token to a log, the call log or a reply.
 - Test data uses made-up businesses and addresses only.
 - Every change goes through a pull request.
@@ -31,15 +33,16 @@ These come from earlier FedEx integrations at HotWax, and from the fixes they ne
 Build:
 - `ShipmentGatewayConfTypeMethod`: the service for each carrier and operation.
 - `ShipmentGatewayResponse`: the log of carrier calls.
-- Operation types `SHIP_LABEL`, `SHIP_VOID` and `SHIP_ACCOUNT_CHECK`, as `CustomMethodType` rows.
+- Operation types `SHIP_LABEL`, `SHIP_VOID`, `SHIP_ACCOUNT_CHECK` and `SHIP_ADDRESS_CHECK`, as `CustomMethodType` rows.
 
 Done when the plugin loads on OFBiz trunk, and the records and seed data load with no errors.
 
 ### 2. Shared services and carrier contracts
 
 Build:
-- Interfaces `shipmentGatewayAccountCheckInterface`, `shipmentGatewayLabelInterface` and `shipmentGatewayVoidInterface`.
-- Services `checkShipmentGatewayAccount`, `requestShipmentLabels` and `voidShipmentLabels`.
+- Interfaces `shipmentGatewayAccountCheckInterface`, `shipmentGatewayAddressCheckInterface`, `shipmentGatewayLabelInterface` and `shipmentGatewayVoidInterface`.
+- Services `checkShipmentGatewayAccount`, `checkShipmentAddress`, `requestShipmentLabels` and `voidShipmentLabels`.
+- `checkShipmentAddress` takes spaces out of the postal code, and returns `VALID`, `INVALID` or `NOT_CHECKED`.
 - Each shared service finds the account, finds the carrier's service, and calls it in its own transaction.
 - `voidShipmentLabels` refuses a shipped shipment.
 
@@ -65,7 +68,7 @@ Done when a test runs a shared service end to end, with no network.
 
 ## Part 2. Carrier template: FedEx
 
-Tasks 5 to 11 carry the label `carrier template`. The next carrier copies them.
+Tasks 5 to 11, with 7a, carry the label `carrier template`. The next carrier copies them.
 
 ### 5. Carrier seed data
 
@@ -90,6 +93,16 @@ Done when two accounts get two tokens, and a changed secret gets a new token.
 Build `fedexCheckAccount`. It gets a token, then makes one small FedEx call that needs the account number.
 
 Done when the saved-reply tests pass for: check passed, wrong secret, wrong account number.
+
+### 7a. Address check
+
+Build `fedexCheckAddress` with FedEx's address validation API:
+- Send the address with spaces taken out of the postal code.
+- Read the result from FedEx's resolved address and its attributes. The postal code comes from the postal code token.
+- Return `VALID`, `INVALID` or `NOT_CHECKED`, the corrected form when it differs, and FedEx's reasons.
+- Never fail an address on the city spelling alone.
+
+Done when the saved-reply tests pass for: good address, undeliverable address, city spelled differently, corrected form with ZIP+4, and FedEx not answering.
 
 ### 8. Label request
 
@@ -131,7 +144,7 @@ Done when each scenario passes against FedEx, and the results are noted in the i
 
 ### 12. Write the "add a shipping carrier" skill
 
-Write a skill in coding-agent-for-ofbiz. It walks a coding agent through tasks 5 to 11 for a new carrier:
+Write a skill in coding-agent-for-ofbiz. It walks a coding agent through tasks 5 to 11, with 7a, for a new carrier:
 - the records and services to add, with the FedEx code as the example;
 - the rules above;
 - how to save carrier replies and write the tests;
@@ -150,4 +163,4 @@ Done when the second carrier passes its tests with no help beyond the skill.
 
 ## Order
 
-Tasks 1 to 4 come first. Tasks 5 to 10 follow in order. Task 11 waits for the FedEx developer account. Task 12 starts after task 10. Task 13 comes last.
+Tasks 1 to 4 come first. Tasks 5 to 10 follow in order, with 7a after 7. Task 11 waits for the FedEx developer account. Task 12 starts after task 10. Task 13 comes last.

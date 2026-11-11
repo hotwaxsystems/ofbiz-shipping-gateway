@@ -49,7 +49,8 @@ This follows trunk's payment setup, where `ProductStorePaymentSetting` names a s
 | `shipmentGatewayResponseId` | Id (key) |
 | `shipmentGatewayConfigId` | The carrier account |
 | `customMethodTypeId` | The operation |
-| `shipmentId`, `shipmentRouteSegmentId` | The route, empty for an account check |
+| `shipmentId`, `shipmentRouteSegmentId` | The route, for a label or a void |
+| `contactMechId` | The address, for an address check |
 | `resultSuccess` | `Y` or `N` |
 | `gatewayCode`, `gatewayMessage` | The carrier's code and reason |
 | `requestMessage`, `responseMessage` | The request and reply, without secrets, tokens or label images |
@@ -76,14 +77,17 @@ Each later carrier adds its own login record in the same shape, such as `Shipmen
     <CustomMethodType customMethodTypeId="SHIP_LABEL" hasTable="N" description="Shipment Gateway label methods"/>
     <CustomMethodType customMethodTypeId="SHIP_VOID" hasTable="N" description="Shipment Gateway void label methods"/>
     <CustomMethodType customMethodTypeId="SHIP_ACCOUNT_CHECK" hasTable="N" description="Shipment Gateway account check methods"/>
+    <CustomMethodType customMethodTypeId="SHIP_ADDRESS_CHECK" hasTable="N" description="Shipment Gateway address check methods"/>
 
     <ShipmentGatewayConfigType shipmentGatewayConfTypeId="FEDEX" hasTable="Y" description="FedEx REST API"/>
     <CustomMethod customMethodId="FEDEX_LABEL" customMethodTypeId="SHIP_LABEL" customMethodName="fedexRequestShipmentLabels"/>
     <CustomMethod customMethodId="FEDEX_VOID" customMethodTypeId="SHIP_VOID" customMethodName="fedexVoidShipmentLabels"/>
     <CustomMethod customMethodId="FEDEX_CHECK" customMethodTypeId="SHIP_ACCOUNT_CHECK" customMethodName="fedexCheckAccount"/>
+    <CustomMethod customMethodId="FEDEX_ADDRESS" customMethodTypeId="SHIP_ADDRESS_CHECK" customMethodName="fedexCheckAddress"/>
     <ShipmentGatewayConfTypeMethod shipmentGatewayConfTypeId="FEDEX" customMethodTypeId="SHIP_LABEL" customMethodId="FEDEX_LABEL"/>
     <ShipmentGatewayConfTypeMethod shipmentGatewayConfTypeId="FEDEX" customMethodTypeId="SHIP_VOID" customMethodId="FEDEX_VOID"/>
     <ShipmentGatewayConfTypeMethod shipmentGatewayConfTypeId="FEDEX" customMethodTypeId="SHIP_ACCOUNT_CHECK" customMethodId="FEDEX_CHECK"/>
+    <ShipmentGatewayConfTypeMethod shipmentGatewayConfTypeId="FEDEX" customMethodTypeId="SHIP_ADDRESS_CHECK" customMethodId="FEDEX_ADDRESS"/>
 
     <CarrierShipmentMethod shipmentMethodTypeId="GROUND" partyId="FEDEX" roleTypeId="CARRIER" carrierServiceCode="FEDEX_GROUND"/>
     <CarrierShipmentMethod shipmentMethodTypeId="SECOND_DAY" partyId="FEDEX" roleTypeId="CARRIER" carrierServiceCode="FEDEX_2_DAY"/>
@@ -114,6 +118,7 @@ Trunk's demo data has FedEx's old service codes, such as `FEDEX2DAY`. The seed a
 | Service | In | Does |
 | --- | --- | --- |
 | `checkShipmentGatewayAccount` | `shipmentGatewayConfigId` | Calls the carrier's check service. Returns `passed` and the carrier's message. |
+| `checkShipmentAddress` | `contactMechId`, `shipmentGatewayConfigId` | Calls the carrier's address check service. Returns the result described below. |
 | `requestShipmentLabels` | `shipmentId`, `shipmentRouteSegmentId`, `labelFormat` | Calls the carrier's label service for the route. |
 | `voidShipmentLabels` | `shipmentId`, `shipmentRouteSegmentId` | Refuses a shipped shipment, then calls the carrier's void service. |
 
@@ -131,7 +136,26 @@ Each shared service:
 | `shipmentGatewayAccountCheckInterface` | `fedexCheckAccount` |
 | `shipmentGatewayLabelInterface` | `fedexRequestShipmentLabels` |
 | `shipmentGatewayVoidInterface` | `fedexVoidShipmentLabels` |
+| `shipmentGatewayAddressCheckInterface` | `fedexCheckAddress` |
 | trunk's `calcShipmentEstimateInterface` | later, for rates |
+
+### What an address check returns
+
+| Out | Meaning |
+| --- | --- |
+| `addressCheckResult` | `VALID`, `INVALID` or `NOT_CHECKED` |
+| `correctedAddress` | The carrier's form of the address, when it differs, as a map like a postal address |
+| `carrierMessages` | The carrier's reasons, as a list |
+
+Rules inside every address check service:
+- Spaces are taken out of the postal code before the call.
+- A different city spelling alone never makes the result `INVALID`.
+- A carrier error or timeout returns `NOT_CHECKED`, never `INVALID`.
+- The service never changes the `PostalAddress` record.
+
+The caller decides what to do with the result. A warehouse application, for example, holds the order on `INVALID` or `NOT_CHECKED`.
+
+The caller passes the carrier account. It is the account of the order's store shipping method.
 
 ### What a label service writes
 
@@ -158,6 +182,13 @@ A void moves it to `SHRSCS_VOIDED`.
 - Every HTTP call goes through one small FedEx client class. It uses the HTTP client built into Java, so no extra library is needed.
 - Requests are built from the route's records: the origin facility's address, the customer's address, each box's weight and size, and the carrier service code.
 - Labels come back as base64 text, in PNG, PDF or ZPL format.
+- The address check uses FedEx's address validation API. FedEx returns results in the order the addresses were sent, and does not echo back a reference id.
+- The address result comes from FedEx's resolved address and its attributes. The postal code is read from the postal code token, since the resolved address has no plain postal code field. These come from fixes in earlier HotWax FedEx work.
+
+## Automatic void
+
+A service ECA on `updateShipment` calls `voidShipmentLabels` when a shipment with accepted labels moves to cancelled.
+The void runs after the shipment change commits, so a carrier error never undoes the cancel. A failed void is in the call log.
 
 ## Security
 

@@ -40,8 +40,8 @@ A shipping platform reaches many carriers through one connection.
 
 | Platform | What it is |
 | --- | --- |
-| ShipHawk | Shipping platform for many carriers, used by larger shippers |
-| ShipStation | Shipping platform for many carriers, often used by smaller sellers |
+| ShipHawk | Shipping platform with rates and labels for many carriers |
+| ShipStation | Shipping platform with rates and labels for many carriers |
 
 ## How a carrier moves up
 

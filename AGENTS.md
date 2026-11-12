@@ -32,6 +32,17 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 - Build reply readers from real or published carrier replies. Never guess a field name.
 - Never fall back to a default carrier service. A missing service code is an error.
 
+## JSON
+
+- Use one shared Jackson `ObjectMapper` for the plugin, held as a static final field. OFBiz's `org.apache.ofbiz.base.lang.JSON` class is fine for simple cases.
+- Turn maps into JSON and JSON into maps with that mapper: `writeValueAsString(map)` and `readValue(body, Map.class)`.
+- Never build JSON by joining strings. Never use `JsonSlurper`, `JsonOutput` or `org.json`.
+- Never change the shared mapper's settings in place. If a call needs other settings, make a `copy()` once and keep it as its own static field.
+- Write dates as formatted text, never as numbers.
+- For large files, stream: write each record with a `JsonGenerator`, and read with a `JsonParser` one object at a time. Never load a whole file into memory, and never collect all records before writing.
+- Open every reader, writer, parser and generator in a try-with-resources block.
+- Never store a full carrier payload in the database. The call log keeps a cut-down copy, as the design says.
+
 ## Secrets and data
 
 - Never write a key, secret or token to a log, the call log, a reply or a test file.

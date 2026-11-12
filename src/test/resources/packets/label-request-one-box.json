@@ -1,49 +1,63 @@
 {
   "shipmentGatewayConfigId": "10400",
-  "labelFormat": "ZPL",
-  "shipDate": "2026-11-12",
-  "serviceCode": "FEDEX_GROUND",
-  "shipper": {
+  "dateOfSale": "2026-11-12",
+  "primaryOrderId": "1022",
+  "orderName": "A-5001",
+  "originAddress": {
+    "facilityId": "SLC_WAREHOUSE",
+    "facilityName": "Salt Lake Warehouse",
+    "toName": "Shipping Dept",
     "companyName": "Acme Outdoor",
-    "phoneNumber": "8015550100",
-    "address": {
-      "streetLines": [
-        "2500 W Warehouse Way"
-      ],
-      "city": "Salt Lake City",
-      "stateOrProvinceCode": "UT",
-      "postalCode": "84104",
-      "countryCode": "US",
-      "residential": false
-    }
+    "address1": "2500 W Warehouse Way",
+    "address2": "",
+    "city": "Salt Lake City",
+    "stateOrProvinceCode": "UT",
+    "postalCode": "84104",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "801",
+    "phoneNumber": "5550100"
   },
-  "recipient": {
-    "personName": "Jane Sample",
-    "phoneNumber": "8015550199",
-    "address": {
-      "streetLines": [
-        "100 Main St"
-      ],
-      "city": "Provo",
-      "stateOrProvinceCode": "UT",
-      "postalCode": "84601",
-      "countryCode": "US",
-      "residential": true
-    }
+  "companyAddress": {
+    "companyName": "Acme Outdoor",
+    "toName": "Acme Outdoor",
+    "address1": "10 Brand Ave",
+    "city": "Denver",
+    "stateOrProvinceCode": "CO",
+    "postalCode": "80202",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "303",
+    "phoneNumber": "5550111",
+    "emailAddress": "ship@acme.example"
   },
-  "references": {
-    "orderId": "1022",
-    "externalOrderId": "A-5001",
-    "shipmentId": "10310"
+  "destAddress": {
+    "toName": "Jane Sample",
+    "address1": "100 Main St",
+    "address2": "",
+    "city": "Provo",
+    "stateOrProvinceCode": "UT",
+    "postalCode": "84601",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "801",
+    "phoneNumber": "5550199",
+    "emailAddress": "jane@example.com",
+    "residential": "true"
   },
-  "packages": [
+  "shipmentMethod": "FEDEX_GROUND",
+  "packagingType": "YOUR_PACKAGING",
+  "pickupType": "USE_SCHEDULED_PICKUP",
+  "labelImageType": "ZPLII",
+  "labelSize": "STOCK_4X6",
+  "parcels": [
     {
-      "packageId": "00001",
-      "weight": 2.4,
+      "shipmentPackageSeqId": "00001",
+      "weightValue": "2.4",
       "weightUnit": "LB",
-      "length": 12,
-      "width": 10,
-      "height": 6,
+      "length": "12",
+      "width": "10",
+      "height": "6",
       "dimensionUnit": "IN"
     }
   ]

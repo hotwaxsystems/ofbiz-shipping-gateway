@@ -50,36 +50,35 @@ All boxes of one shipment go in one request. FedEx returns one master tracking n
 
 ### Request fields and where they come from
 
-| FedEx field | Required | Source |
+| FedEx field | Required | Packet field |
 | --- | --- | --- |
 | `accountNumber.value` | Yes | `ShipmentGatewayFedex.accountNumber`, for the packet's `shipmentGatewayConfigId` |
 | `labelResponseOptions` | Yes | Always `LABEL`, so the label comes back in the reply |
-| `requestedShipment.shipDatestamp` | No | Packet `shipDate` |
-| `requestedShipment.shipper.contact.companyName` | Yes | Packet `shipper.companyName` |
-| `requestedShipment.shipper.contact.personName` | No | Packet `shipper.personName` |
-| `requestedShipment.shipper.contact.phoneNumber` | Yes | Packet `shipper.phoneNumber` |
-| `requestedShipment.shipper.address.streetLines` | Yes | Packet `shipper.address.streetLines` |
-| `requestedShipment.shipper.address.city` | Yes | Packet `shipper.address.city` |
-| `requestedShipment.shipper.address.stateOrProvinceCode` | US, CA | Packet `shipper.address.stateOrProvinceCode` |
-| `requestedShipment.shipper.address.postalCode` | US, CA | Packet `shipper.address.postalCode` |
-| `requestedShipment.shipper.address.countryCode` | Yes | Packet `shipper.address.countryCode` |
-| `requestedShipment.recipients[0].contact.*` | Yes | Packet `recipient` names, phone and email |
-| `requestedShipment.recipients[0].address.*` | Yes | Packet `recipient.address`, as for the shipper |
-| `requestedShipment.recipients[0].address.residential` | No | Packet `recipient.address.residential` |
-| `requestedShipment.serviceType` | Yes | Packet `serviceCode` |
-| `requestedShipment.packagingType` | Yes | `YOUR_PACKAGING` for now |
-| `requestedShipment.pickupType` | Yes | `ShipmentGatewayFedex.pickupType` |
-| `requestedShipment.shippingChargesPayment.paymentType` | Yes | `SENDER`, billed to the account |
-| `requestedShipment.labelSpecification.imageType` | Yes | Packet `labelFormat`: `PDF`, `PNG`, or `ZPLII` for `ZPL` |
-| `requestedShipment.labelSpecification.labelStockType` | Yes | `STOCK_4X6` for ZPL, `PAPER_4X6` for PDF and PNG |
-| `requestedShipment.totalWeight` | Yes | Sum of the packages' `weight` |
-| `requestedShipment.totalPackageCount` | No | Number of packages |
-| `requestedShipment.requestedPackageLineItems[i].sequenceNumber` | No | Position of the package, from 1 |
-| `requestedShipment.requestedPackageLineItems[i].weight` | Yes | Package `weight` and `weightUnit` (`LB` or `KG`) |
-| `requestedShipment.requestedPackageLineItems[i].dimensions` | No | Package `length`, `width`, `height` and `dimensionUnit` (`IN` or `CM`), when given |
-| `requestedShipment.requestedPackageLineItems[i].customerReferences` | No | `CUSTOMER_REFERENCE` = packet `references.externalOrderId`, else `references.orderId` |
+| `requestedShipment.shipDatestamp` | No | `dateOfSale` |
+| `requestedShipment.shipper.contact.companyName` | Yes | `companyAddress.companyName` |
+| `requestedShipment.shipper.contact.personName` | No | `companyAddress.toName` |
+| `requestedShipment.shipper.contact.phoneNumber` | Yes | `originAddress.phoneAreaCode` + `phoneNumber` |
+| `requestedShipment.shipper.address.*` | Yes | `originAddress`: `address1` and `address2` as `streetLines`, `city`, `stateOrProvinceCode`, `postalCode`, `countryCode` |
+| `requestedShipment.recipients[0].contact.personName` | Yes | `destAddress.toName` |
+| `requestedShipment.recipients[0].contact.companyName` | No | `destAddress.companyName` |
+| `requestedShipment.recipients[0].contact.phoneNumber` | Yes | `destAddress.phoneAreaCode` + `phoneNumber` |
+| `requestedShipment.recipients[0].contact.emailAddress` | No | `destAddress.emailAddress` |
+| `requestedShipment.recipients[0].address.*` | Yes | `destAddress`, as for the shipper |
+| `requestedShipment.recipients[0].address.residential` | No | `destAddress.residential` |
+| `requestedShipment.serviceType` | Yes | `shipmentMethod` |
+| `requestedShipment.packagingType` | Yes | `packagingType` |
+| `requestedShipment.pickupType` | Yes | `pickupType` |
+| `requestedShipment.shippingChargesPayment.paymentType` | Yes | `SENDER`. `THIRD_PARTY` with `payorAddress` and `billingAccountNbr` comes later |
+| `requestedShipment.labelSpecification.imageType` | Yes | `labelImageType` |
+| `requestedShipment.labelSpecification.labelStockType` | Yes | `labelSize` |
+| `requestedShipment.totalWeight` | Yes | Sum of the parcels' `weightValue` |
+| `requestedShipment.totalPackageCount` | No | Number of parcels |
+| `requestedShipment.requestedPackageLineItems[i].sequenceNumber` | No | Position of the parcel, from 1 |
+| `requestedShipment.requestedPackageLineItems[i].weight` | Yes | Parcel `weightValue` and `weightUnit` (`LB` or `KG`) |
+| `requestedShipment.requestedPackageLineItems[i].dimensions` | No | Parcel `length`, `width`, `height` and `dimensionUnit` (`IN` or `CM`), when given |
+| `requestedShipment.requestedPackageLineItems[i].customerReferences` | No | `CUSTOMER_REFERENCE` = `orderName`, else `primaryOrderId` |
 
-A packet missing a required field fails before the call, with the field's name in the reason.
+The packet uses unigate's field names, shared by every carrier. A packet missing a required field fails before the call, with the field's name in the reason.
 
 Values FedEx accepts, from its spec:
 
@@ -93,14 +92,15 @@ Values FedEx accepts, from its spec:
 
 ### Reply fields and where they go
 
-| FedEx field | Result packet field |
+| FedEx field | Result field |
 | --- | --- |
-| `output.transactionShipments[0].masterTrackingNumber` | `masterTrackingNumber` |
-| `output.transactionShipments[0].pieceResponses[i].trackingNumber` | `packages[i].trackingNumber`, with the package's `packageId`, matched by `packageSequenceNumber` |
-| `...pieceResponses[i].packageDocuments[j].encodedLabel` | `packages[i].labelContent`, base64 as received |
-| `...packageDocuments[j].url` | Only if `encodedLabel` is missing: download the label from it |
-| `output.transactionShipments[0].completedShipmentDetail.shipmentRating.shipmentRateDetails[0].totalNetCharge` | `totalCharge` and `currencyCode` |
-| `output.transactionShipments[0].alerts` and `...packageDocuments[j].alerts` | `warnings` |
+| `output.transactionShipments[0].masterTrackingNumber` | `shippingLabelMap.referenceNumber` |
+| `output.transactionShipments[0].pieceResponses[i].trackingNumber` | `shippingLabelMap.packages[i].trackingIdNumber`, with the parcel's `shipmentPackageSeqId`, matched by `packageSequenceNumber` |
+| `...pieceResponses[i].packageDocuments[j].encodedLabel` | `shippingLabelMap.packages[i].imageBytes`, base64 as received |
+| `...packageDocuments[j].url` | `shippingLabelMap.packages[i].labelImageUrl` |
+| `output.transactionShipments[0].completedShipmentDetail.shipmentRating.shipmentRateDetails[0].totalNetCharge` | `shippingLabelMap.shippingCharge` and `currencyUomId` |
+| `output.transactionShipments[0].alerts` and `...packageDocuments[j].alerts` | `warningMessages` |
+| always | `shippingLabelMap.actualCarrierCode` = `FEDEX` |
 
 The caller saves the result in its own records.
 
@@ -113,7 +113,7 @@ An alert of type `NOTE` or `WARNING` is not a failure. Example: `SHIP.RECIPIENT.
 | FedEx field | Source |
 | --- | --- |
 | `accountNumber.value` | `ShipmentGatewayFedex.accountNumber` |
-| `trackingNumber` | Packet `masterTrackingNumber` |
+| `trackingNumber` | `trackingNumber`, the master tracking number |
 | `deletionControl` | `DELETE_ALL_PACKAGES` |
 
 The void worked only if `output.cancelledShipment` is `true`. A 200 reply with `false` is a failure. Its reason is in `output.message` or `output.alerts`.
@@ -122,25 +122,27 @@ The void worked only if `output.cancelledShipment` is `true`. A 200 reply with `
 
 `POST /address/v1/addresses/resolve`
 
-| FedEx field | Source |
+Each entry of the packet's `addresses` becomes one `addressesToValidate` entry, in the same order.
+
+| FedEx field | Packet field |
 | --- | --- |
-| `addressesToValidate[0].address.streetLines` | Packet `address.streetLines` |
-| `addressesToValidate[0].address.city` | Packet `address.city` |
-| `addressesToValidate[0].address.stateOrProvinceCode` | Packet `address.stateOrProvinceCode` |
-| `addressesToValidate[0].address.postalCode` | Packet `address.postalCode`, with spaces taken out |
-| `addressesToValidate[0].address.countryCode` | Packet `address.countryCode` |
+| `addressesToValidate[i].address.streetLines` | `addresses[i].address.address1`, `address2` |
+| `addressesToValidate[i].address.city` | `addresses[i].address.city` |
+| `addressesToValidate[i].address.stateOrProvinceCode` | `addresses[i].address.stateOrProvinceCode` |
+| `addressesToValidate[i].address.postalCode` | `addresses[i].address.postalCode`, with spaces taken out |
+| `addressesToValidate[i].address.countryCode` | `addresses[i].address.countryCode` |
 
 Reading the reply, from fixes in earlier FedEx work:
-- Results come back in the order the addresses were sent. FedEx does not echo a reference id.
+- Results come back in the order the addresses were sent. FedEx does not echo a reference id, so take each `clientReferenceId` from the packet by position.
 - The postal code is in `postalCodeToken.value`. The resolved address has no plain postal code field.
 - The street is in `streetLinesToken`.
 - Attribute values come as `true`, `false` or their text forms. Treat both alike.
-- `classification` gives `BUSINESS`, `RESIDENTIAL`, `MIXED` or `UNKNOWN`. Return it, so the caller can set `residential` on later labels.
+- `classification` gives `BUSINESS`, `RESIDENTIAL`, `MIXED` or `UNKNOWN`. Return it in `validationSummary`, so the caller can set `residential` on later labels.
 
 Result rules, from the requirements:
-- `VALID` when FedEx resolves the address and its delivery point.
-- `INVALID` when it cannot. A different city spelling alone is never `INVALID`.
-- `NOT_CHECKED` on any HTTP error, timeout or 5xx reply.
+- `isValid` true when FedEx resolves the address and its delivery point.
+- `isValid` false when it cannot. A different city spelling alone never makes it false.
+- `success` false on any HTTP error, timeout or 5xx reply. The caller treats that as not checked.
 
 ## Errors
 
@@ -162,7 +164,7 @@ Every call, failed or not, writes a `ShipmentGatewayResponse` row without the to
 
 ## Service codes
 
-The plugin seeds these `CarrierShipmentMethod` rows for FedEx, from FedEx's service list. The caller reads them to fill the packet's `serviceCode`:
+The plugin seeds these `CarrierShipmentMethod` rows for FedEx, from FedEx's service list. The caller reads them to fill the packet's `shipmentMethod`:
 
 | `shipmentMethodTypeId` | `carrierServiceCode` | Where |
 | --- | --- | --- |

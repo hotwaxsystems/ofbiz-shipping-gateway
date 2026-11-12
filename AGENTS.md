@@ -20,6 +20,7 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 ## How to write code
 
 - Services take a fully resolved packet and return a result packet, as the design defines.
+- Packets are the same for every carrier, with unigate's field names. A carrier package never adds its own packet fields; a new field goes in the design first.
 - Never read the caller's business records, such as shipments, packages, addresses or orders. Read only the plugin's own records: accounts, logins, service rows, tokens and the call log.
 - Never write to the caller's records. Return the result, and the caller saves it.
 - Services are written in Groovy, using OFBiz's Groovy service style.

@@ -15,7 +15,7 @@ This keeps the plugin usable by any OFBiz application, and easy to test with pac
 
 ## How a label request flows
 
-1. The caller builds a label packet: the carrier account, shipper, recipient, service code, packages and references.
+1. The caller builds a label packet: the carrier account, the origin, company and destination addresses, the carrier's service code, and the parcels.
 2. The plugin reads the account's type, such as FedEx, and finds that carrier's label service from data.
 3. The carrier service turns the packet into the carrier's request and calls the carrier.
 4. The plugin records the call in its call log.
@@ -28,86 +28,106 @@ The WMS writes the tracking number and label to its route records.
 
 ## Packets
 
-Packets are maps. Field names are the same for every carrier.
+The packets are uniform across all carriers. They follow the shared interfaces HotWax built in unigate, with the same field names, so a caller written for unigate fits here.
+The carrier account is named by `shipmentGatewayConfigId`, OFBiz's own id, where unigate used `shippingGatewayAuthId`.
 
-### Address
+### Address map
+
+Used for `originAddress`, `companyAddress`, `destAddress` and `payorAddress`.
 
 | Field | Meaning |
 | --- | --- |
-| `streetLines` | List of street lines |
+| `toName`, `companyName` | Names on the label |
+| `address1`, `address2` | Street lines |
 | `city` | City |
 | `stateOrProvinceCode` | Such as `UT` or `ON` |
 | `postalCode` | Postal code |
 | `countryCode` | Two letters, such as `US` or `CA` |
-| `residential` | `true` or `false`, set by the caller |
+| `phoneCountryCode`, `phoneAreaCode`, `phoneNumber` | Phone, in parts |
+| `emailAddress` | Email |
+| `residential` | `true` or `false`, on `destAddress`, set by the caller |
+| `facilityId`, `facilityName` | On `originAddress`, the warehouse |
 
-### Party
-
-| Field | Meaning |
-| --- | --- |
-| `companyName`, `personName` | Names on the label |
-| `phoneNumber`, `emailAddress` | Contact |
-| `address` | An address packet |
-
-### Label request
+### Label request: `shipmentGatewayLabelInterface`
 
 | Field | Meaning |
 | --- | --- |
 | `shipmentGatewayConfigId` | The carrier account |
-| `labelFormat` | `PDF`, `PNG` or `ZPL` |
-| `shipDate` | `YYYY-MM-DD` |
-| `serviceCode` | The carrier's own code, such as `FEDEX_GROUND`, resolved by the caller |
-| `shipper`, `recipient` | Party packets |
-| `packages` | List of packages |
-| `references` | Map of the caller's ids, such as `orderId`, `externalOrderId`, `shipmentId`. Kept in the call log and sent to the carrier as references |
+| `dateOfSale` | Ship date, `YYYY-MM-DD` |
+| `primaryOrderId`, `orderName` | The caller's order id and the order's name, such as the sales channel's number |
+| `originAddress` | Where the boxes leave from, the warehouse |
+| `companyAddress` | The shipper of record, such as the merchant |
+| `destAddress` | The recipient |
+| `payorAddress`, `billingAccountNbr` | Only for third-party billing, later |
+| `shipmentMethod` | The carrier's own service code, such as `FEDEX_GROUND`, resolved by the caller |
+| `packagingType`, `pickupType` | The carrier's codes, such as `YOUR_PACKAGING` and `USE_SCHEDULED_PICKUP` |
+| `labelImageType`, `labelSize` | `PDF`, `PNG` or `ZPLII`, and the stock, such as `STOCK_4X6` |
+| `parcels` | List of boxes |
 
-Each package:
+Each parcel:
 
 | Field | Meaning |
 | --- | --- |
-| `packageId` | The caller's id for the box, returned with its tracking number |
-| `weight`, `weightUnit` | Such as `2.4`, `LB` or `KG` |
-| `length`, `width`, `height`, `dimensionUnit` | Optional, `IN` or `CM` |
+| `shipmentPackageSeqId` | The caller's id for the box, returned with its tracking number |
+| `weightValue`, `weightUnit` | Such as `2.4`, `LB` or `KG` |
+| `length`, `width`, `height` | Optional, in the unit the caller states in `dimensionUnit`: `IN` or `CM` |
+| `orderItems` | Optional, for customs, later |
 
 ### Label result
 
 | Field | Meaning |
 | --- | --- |
 | `success` | `true` or `false` |
-| `masterTrackingNumber` | The shipment's tracking number |
-| `packages` | List of `packageId`, `trackingNumber`, `labelFormat`, `labelContent` (base64) |
-| `totalCharge`, `currencyCode` | The carrier's charge |
-| `warnings` | List of carrier code and message, such as a postal code and city mismatch |
-| `errorCode`, `errorMessage` | The carrier's reason, when it refuses |
-| `shipmentGatewayResponseId` | The call log row |
+| `errorMessages` | The carrier's reason, when it refuses |
+| `shippingLabelMap.referenceNumber` | The shipment's master tracking number |
+| `shippingLabelMap.actualCarrierCode` | The carrier, such as `FEDEX` |
+| `shippingLabelMap.trackingUrl` | The carrier's tracking page, when it gives one |
+| `shippingLabelMap.packages` | List of `shipmentPackageSeqId`, `trackingIdNumber`, `imageBytes` (base64 label), `labelImageUrl` |
 
-### Void request and result
+Added here, beyond unigate:
+- `shipmentPackageSeqId` on each returned package, so the caller matches labels to boxes. Unigate matched by order only.
+- `dimensionUnit` on each parcel. Unigate left the unit unstated.
+- `shippingLabelMap.shippingCharge` and `currencyUomId`, the carrier's charge.
+- `warningMessages`, carrier notes that come with a valid label, such as a postal code and city mismatch.
+- `shipmentGatewayResponseId`, the call log row.
+
+### Void: `shipmentGatewayVoidInterface`
+
+Unigate called this refund.
 
 | Field | Meaning |
 | --- | --- |
 | `shipmentGatewayConfigId` | The carrier account |
-| `masterTrackingNumber` | The shipment's tracking number |
-| `references` | The caller's ids |
-| Result: `success`, `errorCode`, `errorMessage`, `shipmentGatewayResponseId` | |
+| `trackingNumber` | The master tracking number |
+| `trackingIds` | Optional, single boxes to void |
+| Result: `success`, `errorMessages`, `shipmentGatewayResponseId` | |
 
-### Address check request and result
+### Address check: `shipmentGatewayAddressCheckInterface`
 
 | Field | Meaning |
 | --- | --- |
 | `shipmentGatewayConfigId` | The address check account |
-| `address` | An address packet |
-| `references` | The caller's ids, such as `contactMechId` |
-| Result: `addressCheckResult` | `VALID`, `INVALID` or `NOT_CHECKED` |
-| Result: `classification` | `RESIDENTIAL`, `BUSINESS`, `MIXED` or `UNKNOWN` |
-| Result: `correctedAddress` | An address packet, when the carrier's form differs |
-| Result: `carrierMessages` | The carrier's reasons |
+| `addresses` | List of `clientReferenceId` and `address` (address map) |
+| Result: `success`, `errorMessages` | `success` false means the carrier was not reached: the addresses are not checked |
+| Result: `results` | List of `clientReferenceId`, `isValid`, and `validationSummary` |
 
-### Account check
+`validationSummary` holds `classification` (`RESIDENTIAL`, `BUSINESS`, `MIXED`, `UNKNOWN`), `standardizedAddress` (an address map, when the carrier's form differs) and `issue` (the carrier's reason).
+
+The three results of the requirements come from this:
+- `VALID`: `success` true and `isValid` true.
+- `INVALID`: `success` true and `isValid` false.
+- `NOT_CHECKED`: `success` false.
+
+### Account check: `shipmentGatewayAccountCheckInterface`
 
 | Field | Meaning |
 | --- | --- |
 | `shipmentGatewayConfigId` | The carrier account |
-| Result: `passed`, `errorCode`, `errorMessage` | |
+| Result: `success`, `errorMessages` | |
+
+### Rates, later: `shipmentGatewayRateInterface`
+
+The same shape as unigate's rate interface: `originAddress`, `destAddress`, `parcels`, `shipmentMethod`, and a `shippingRates` list in the result.
 
 ## Records
 
@@ -124,7 +144,7 @@ Each package:
 
 | Record | Use |
 | --- | --- |
-| `CarrierShipmentMethod` | The carrier's own code for a shipping method, such as `FEDEX_GROUND` for `GROUND`. The plugin seeds current codes. The caller reads them to fill `serviceCode`. |
+| `CarrierShipmentMethod` | The carrier's own code for a shipping method, such as `FEDEX_GROUND` for `GROUND`. The plugin seeds current codes. The caller reads them to fill `shipmentMethod`. |
 | `ShipmentMethodType` | The method types the seeded codes use. |
 
 The plugin never reads `Shipment`, `ShipmentPackage`, `ShipmentRouteSegment`, `PostalAddress`, `ProductStoreShipmentMeth` or any order record.
@@ -148,7 +168,7 @@ This follows trunk's payment setup, where `ProductStorePaymentSetting` names a s
 | `shipmentGatewayResponseId` | Id (key) |
 | `shipmentGatewayConfigId` | The carrier account |
 | `customMethodTypeId` | The operation |
-| `referenceIds` | The caller's `references`, as given, as JSON. No link to the caller's records |
+| `referenceIds` | The caller's ids from the packet, such as `primaryOrderId` and the `clientReferenceId`s, as JSON. No link to the caller's records |
 | `resultSuccess` | `Y` or `N` |
 | `gatewayCode`, `gatewayMessage` | The carrier's code and reason |
 | `requestMessage`, `responseMessage` | The request and reply, without secrets, tokens or label images |
@@ -165,7 +185,6 @@ The last account check of an account is its newest `SHIP_ACCOUNT_CHECK` row here
 | `apiKey` | FedEx API key |
 | `apiSecret` | FedEx secret, `encrypt="true"` |
 | `testMode` | `Y` uses FedEx's test address, `N` the live one |
-| `pickupType` | How FedEx collects the boxes: `USE_SCHEDULED_PICKUP` or `DROPOFF_AT_FEDEX_LOCATION` |
 
 Each later carrier adds its own login record in the same shape, such as `ShipmentGatewayUps`.
 
@@ -204,7 +223,7 @@ The full FedEx service list is in `docs/fedex/fedex-api.md`.
 <entity-engine-xml>
     <ShipmentGatewayConfig shipmentGatewayConfigId="10400" shipmentGatewayConfTypeId="FEDEX" description="Acme FedEx"/>
     <ShipmentGatewayFedex shipmentGatewayConfigId="10400" accountNumber="740561073" apiKey="l7a1b2c3d4e5f6"
-            apiSecret="(encrypted)" testMode="Y" pickupType="USE_SCHEDULED_PICKUP"/>
+            apiSecret="(encrypted)" testMode="Y"/>
 </entity-engine-xml>
 ```
 
@@ -252,7 +271,7 @@ The interfaces take and return the packets above, so every carrier gets the same
 For a warehouse application, such as the WMS:
 
 1. Picks the carrier account, for example from the store shipping method.
-2. Builds the packet from its records: the facility address as the shipper, the ship-to address as the recipient, each shipment package, and the service code from `CarrierShipmentMethod`.
+2. Builds the packet from its records: the facility address as `originAddress`, the merchant as `companyAddress`, the ship-to address as `destAddress`, each shipment package as a parcel, and `shipmentMethod` from `CarrierShipmentMethod`.
 3. Sets `residential` from its last address check of the ship-to address.
 4. Calls the shared service.
 5. Saves the result: the route's tracking number, cost and carrier status, and each package's tracking number and label.
@@ -288,5 +307,5 @@ These settle the points that were open for the design review. Each one can chang
 3. Route set-up and route status: the caller's job, since the route is the caller's record.
 4. Call log size: request and reply text is kept up to 64 KB each. Longer text is cut, and the row says it was cut. Label images are never kept in the log.
 5. Residential flag: set by the caller. The address check returns `classification` to help it.
-6. Pickup type: kept on the FedEx account record, so each account says how its boxes leave the warehouse.
-7. Label stock: `STOCK_4X6` for ZPL, `PAPER_4X6` for PDF and PNG, as earlier FedEx work found for thermal printers.
+6. Uniform packets: the packets follow unigate's shared interfaces and field names, for every carrier (Expert User ruling, 2026-11-12). `pickupType`, `packagingType`, `labelImageType` and `labelSize` come in the packet, as in unigate.
+7. Label stock: the caller sends `labelSize`. Earlier FedEx work found `STOCK_4X6` right for ZPL, and `PAPER_4X6` for PDF and PNG.

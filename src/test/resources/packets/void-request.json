@@ -1,7 +1,4 @@
 {
   "shipmentGatewayConfigId": "10400",
-  "masterTrackingNumber": "794600000001",
-  "references": {
-    "shipmentId": "10310"
-  }
+  "trackingNumber": "794600000001"
 }

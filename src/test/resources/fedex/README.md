@@ -13,3 +13,5 @@ Never add a real account number, key, token or customer address here.
 | `ship-with-note-alert.json` | Label with a NOTE alert, which is not a failure |
 | `ship-invalid-postal-code.json` | FedEx refuses the address |
 | `cancel-ok.json`, `cancel-not-cancelled.json` | Void, and a void FedEx refuses with a 200 reply |
+
+How tests use these files: `docs/testing.md`.

@@ -40,6 +40,7 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 
 ## Tests
 
+- How tests use the sample files: `docs/testing.md`.
 - Every issue's "Done when" list becomes tests.
 - Tests use the saved replies. No automatic test calls a real carrier.
 - Run the plugin's tests with `./gradlew "ofbiz --test component=shippinggateway"` from the OFBiz checkout.

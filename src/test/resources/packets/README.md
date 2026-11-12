@@ -11,3 +11,5 @@ Tests send these packets, with the FedEx client replaced by the replies in `../f
 | `void-request.json` | Void request |
 | `address-check-request.json` | Address check request |
 | `address-check-result-good.json` | Address check result for a good address |
+
+How tests use these files: `docs/testing.md`.

@@ -1,0 +1,9 @@
+{
+  "transactionId": "t-1002",
+  "errors": [
+    {
+      "code": "RECIPIENTCONTACT.POSTALCODE.INVALID",
+      "message": "Recipient postal code is invalid."
+    }
+  ]
+}

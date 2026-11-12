@@ -1,0 +1,24 @@
+{
+  "transactionId": "t-3002",
+  "output": {
+    "resolvedAddresses": [
+      {
+        "streetLinesToken": [
+          "1 NOWHERE LN"
+        ],
+        "city": "PROVO",
+        "stateOrProvinceCode": "UT",
+        "postalCodeToken": {
+          "value": "84199"
+        },
+        "countryCode": "US",
+        "classification": "UNKNOWN",
+        "attributes": {
+          "Resolved": "false",
+          "DPV": false,
+          "Matched": "false"
+        }
+      }
+    ]
+  }
+}

@@ -67,6 +67,7 @@ The last account check of an account is its newest `SHIP_ACCOUNT_CHECK` row here
 | `apiKey` | FedEx API key |
 | `apiSecret` | FedEx secret, `encrypt="true"` |
 | `testMode` | `Y` uses FedEx's test address, `N` the live one |
+| `pickupType` | How FedEx collects the boxes: `USE_SCHEDULED_PICKUP` or `DROPOFF_AT_FEDEX_LOCATION` |
 
 Each later carrier adds its own login record in the same shape, such as `ShipmentGatewayUps`.
 
@@ -202,9 +203,14 @@ The void runs after the shipment change commits, so a carrier error never undoes
 - Saved replies use made-up accounts and addresses.
 - A person tests against FedEx's test system by hand before each release.
 
-## Points for the design review
+## Decisions
 
-1. Language: carrier calls need HTTP and JSON, so services are in Groovy. The shared services could be in Groovy too.
-2. Route set-up: the caller makes the route before asking for labels. The plugin could make it from the order instead.
-3. Response log size: label images are left out. Request and reply text may still be large for many boxes.
-4. Status steps: trunk's route statuses come from carriers with two calls, confirm then accept. FedEx's API has one call, so both steps happen together.
+These settle the points that were open for the design review. Each one can change in review, and the change goes in this section.
+
+1. Language: all services, shared and carrier, are written in Groovy. Carrier calls need HTTP and JSON, and one language keeps the plugin simple.
+2. Route set-up: the plugin makes the route if the shipment has none. It takes the carrier and method from the order's ship group, the origin from the facility, and the destination from the ship group's address. A caller that already made a route keeps it.
+3. Call log size: request and reply text is kept up to 64 KB each. Longer text is cut, and the row says it was cut. Label images are never kept in the log.
+4. Route status: FedEx makes the label in one call, so the route moves through `SHRSCS_CONFIRMED` to `SHRSCS_ACCEPTED` in the same transaction.
+5. Residential flag: it comes from the last address check of the destination. `RESIDENTIAL` and `MIXED` mean residential. `BUSINESS` means not. With no check, or `UNKNOWN`, the shipment counts as residential, since most merchant orders go to homes. This choice needs a check with FedEx billing rules in issue #13.
+6. Pickup type: kept on the FedEx account record, so each account says how its boxes leave the warehouse.
+7. Label stock: `STOCK_4X6` for ZPL, `PAPER_4X6` for PDF and PNG, as earlier FedEx work found for thermal printers.

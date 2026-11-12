@@ -1,0 +1,24 @@
+{
+  "transactionId": "t-3001",
+  "output": {
+    "resolvedAddresses": [
+      {
+        "streetLinesToken": [
+          "100 MAIN ST"
+        ],
+        "city": "PROVO",
+        "stateOrProvinceCode": "UT",
+        "postalCodeToken": {
+          "value": "84601-1234"
+        },
+        "countryCode": "US",
+        "classification": "RESIDENTIAL",
+        "attributes": {
+          "Resolved": "true",
+          "DPV": true,
+          "Matched": "true"
+        }
+      }
+    ]
+  }
+}

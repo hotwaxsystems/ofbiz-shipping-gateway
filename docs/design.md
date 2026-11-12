@@ -9,7 +9,7 @@ The caller sends a fully resolved data packet. The plugin never reads the caller
 - The caller, such as the WMS, reads its own shipments, addresses, packages and service codes. It builds the packet and sends it.
 - The plugin turns the packet into the carrier's request, calls the carrier, and returns a result packet.
 - The caller saves the result in its own records, such as the shipment route and its packages.
-- The plugin reads and writes only its own records: carrier accounts, logins, which service does each operation, tokens, and the call log.
+- The plugin reads and writes only its own records: carrier accounts, logins, which service does each operation, and the call log. Tokens live in a cache, never in a record.
 
 This keeps the plugin usable by any OFBiz application, and easy to test with packets alone.
 
@@ -128,6 +128,30 @@ The three results of the requirements come from this:
 ### Rates, later: `shipmentGatewayRateInterface`
 
 The same shape as unigate's rate interface: `originAddress`, `destAddress`, `parcels`, `shipmentMethod`, and a `shippingRates` list in the result.
+
+## Data statements
+
+1. A carrier account belongs to one carrier, such as FedEx.
+2. A carrier account has one login. Its secret is kept encrypted.
+3. A carrier account is in test mode or live mode.
+4. A carrier account belongs to one merchant. The caller keeps that link, on its own records.
+5. Each carrier names one service for each operation: label, void, address check, account check, and later rates.
+6. Each shipping method may have the carrier's own code for it, such as `FEDEX_GROUND` for ground.
+7. Each call to a carrier is recorded: the account, the operation, the caller's reference ids, whether it worked, the carrier's code and reason, the request and the reply, when, and who.
+8. A recorded request or reply never holds a secret, a token or a label image, and is cut at 64 KB.
+9. An account's last check is its newest account check call.
+10. A login token is kept in memory until it expires. It is never stored.
+11. The plugin keeps no shipment, package, address or order data. The caller keeps every result.
+
+| Statement | Where it is kept |
+| --- | --- |
+| 1 | `ShipmentGatewayConfig.shipmentGatewayConfTypeId` |
+| 2, 3 | The carrier's login record, such as `ShipmentGatewayFedex` |
+| 4 | The caller's records, such as `ProductStoreShipmentMeth.shipmentGatewayConfigId` |
+| 5 | `ShipmentGatewayConfTypeMethod` and `CustomMethod` |
+| 6 | `CarrierShipmentMethod` |
+| 7, 8, 9 | `ShipmentGatewayResponse` |
+| 10 | An OFBiz cache per account |
 
 ## Records
 

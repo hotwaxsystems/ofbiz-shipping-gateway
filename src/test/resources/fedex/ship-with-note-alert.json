@@ -1,0 +1,46 @@
+{
+  "transactionId": "t-1001",
+  "output": {
+    "transactionShipments": [
+      {
+        "serviceType": "FEDEX_GROUND",
+        "shipDatestamp": "2026-11-12",
+        "serviceCategory": "GROUND",
+        "masterTrackingNumber": "794600000001",
+        "pieceResponses": [
+          {
+            "packageSequenceNumber": 1,
+            "trackingNumber": "794600000001",
+            "masterTrackingNumber": "794600000001",
+            "netChargeAmount": 9.85,
+            "packageDocuments": [
+              {
+                "contentType": "LABEL",
+                "trackingNumber": "794600000001",
+                "docType": "PDF",
+                "encodedLabel": "ZGVtbyBsYWJlbA==",
+                "alerts": [
+                  {
+                    "code": "SHIP.RECIPIENT.POSTALCITY.MISMATCH",
+                    "alertType": "NOTE",
+                    "message": "Recipient Postal-City Mismatch."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "completedShipmentDetail": {
+          "shipmentRating": {
+            "shipmentRateDetails": [
+              {
+                "totalNetCharge": 9.85,
+                "currency": "USD"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

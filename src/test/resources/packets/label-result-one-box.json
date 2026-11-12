@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "errorMessages": null,
+  "warningMessages": [],
+  "shipmentGatewayResponseId": "10500",
+  "shippingLabelMap": {
+    "referenceNumber": "794600000001",
+    "actualCarrierCode": "FEDEX",
+    "shippingCharge": "9.85",
+    "currencyUomId": "USD",
+    "packages": [
+      {
+        "shipmentPackageSeqId": "00001",
+        "trackingIdNumber": "794600000001",
+        "imageBytes": "ZGVtbyBsYWJlbA=="
+      }
+    ]
+  }
+}

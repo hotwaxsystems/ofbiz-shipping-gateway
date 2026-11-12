@@ -1,0 +1,65 @@
+{
+  "shipmentGatewayConfigId": "10400",
+  "dateOfSale": "2026-11-12",
+  "primaryOrderId": "1022",
+  "orderName": "A-5001",
+  "originAddress": {
+    "facilityId": "SLC_WAREHOUSE",
+    "facilityName": "Salt Lake Warehouse",
+    "toName": "Shipping Dept",
+    "companyName": "Acme Outdoor",
+    "address1": "2500 W Warehouse Way",
+    "address2": "",
+    "city": "Salt Lake City",
+    "stateOrProvinceCode": "UT",
+    "postalCode": "84104",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "801",
+    "phoneNumber": "5550100"
+  },
+  "companyAddress": {
+    "companyName": "Acme Outdoor",
+    "toName": "Acme Outdoor",
+    "address1": "10 Brand Ave",
+    "city": "Denver",
+    "stateOrProvinceCode": "CO",
+    "postalCode": "80202",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "303",
+    "phoneNumber": "5550111",
+    "emailAddress": "ship@acme.example"
+  },
+  "destAddress": {
+    "toName": "Jane Sample",
+    "address1": "100 Main St",
+    "address2": "",
+    "city": "Provo",
+    "stateOrProvinceCode": "UT",
+    "postalCode": "84601",
+    "countryCode": "US",
+    "phoneCountryCode": "1",
+    "phoneAreaCode": "801",
+    "phoneNumber": "5550199",
+    "emailAddress": "jane@example.com",
+    "residential": "true"
+  },
+  "shipmentMethod": "FEDEX_GROUND",
+  "packagingType": "YOUR_PACKAGING",
+  "pickupType": "USE_SCHEDULED_PICKUP",
+  "labelImageType": "ZPLII",
+  "labelSize": "STOCK_4X6",
+  "parcels": [
+    {
+      "shipmentPackageSeqId": "00001",
+      "weightValue": "2.4",
+      "weightUnit": "LB"
+    },
+    {
+      "shipmentPackageSeqId": "00002",
+      "weightValue": "5.1",
+      "weightUnit": "LB"
+    }
+  ]
+}

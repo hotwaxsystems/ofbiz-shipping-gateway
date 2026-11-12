@@ -1,0 +1,16 @@
+{
+  "transactionId": "t-4001",
+  "output": {
+    "rateReplyDetails": [
+      {
+        "serviceType": "FEDEX_GROUND",
+        "ratedShipmentDetails": [
+          {
+            "totalNetCharge": 9.85,
+            "currency": "USD"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "errorMessages": null,
+  "results": [
+    {
+      "clientReferenceId": "10230",
+      "isValid": true,
+      "validationSummary": {
+        "isValid": true,
+        "classification": "RESIDENTIAL",
+        "standardizedAddress": {
+          "address1": "100 MAIN ST",
+          "city": "PROVO",
+          "stateOrProvinceCode": "UT",
+          "postalCode": "84601-1234",
+          "countryCode": "US"
+        },
+        "issue": null
+      }
+    }
+  ]
+}

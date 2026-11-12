@@ -1,0 +1,16 @@
+{
+  "shipmentGatewayConfigId": "10400",
+  "addresses": [
+    {
+      "clientReferenceId": "10230",
+      "address": {
+        "address1": "100 Main St",
+        "address2": "",
+        "city": "Provo",
+        "stateOrProvinceCode": "UT",
+        "postalCode": "84601",
+        "countryCode": "US"
+      }
+    }
+  ]
+}

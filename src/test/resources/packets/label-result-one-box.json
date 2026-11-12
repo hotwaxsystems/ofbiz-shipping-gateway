@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "masterTrackingNumber": "794600000001",
+  "packages": [
+    {
+      "packageId": "00001",
+      "trackingNumber": "794600000001",
+      "labelFormat": "ZPL",
+      "labelContent": "ZGVtbyBsYWJlbA=="
+    }
+  ],
+  "totalCharge": 9.85,
+  "currencyCode": "USD",
+  "warnings": [],
+  "shipmentGatewayResponseId": "10500"
+}

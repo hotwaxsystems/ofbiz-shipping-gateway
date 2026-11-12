@@ -1,0 +1,51 @@
+{
+  "shipmentGatewayConfigId": "10400",
+  "labelFormat": "ZPL",
+  "shipDate": "2026-11-12",
+  "serviceCode": "FEDEX_GROUND",
+  "shipper": {
+    "companyName": "Acme Outdoor",
+    "phoneNumber": "8015550100",
+    "address": {
+      "streetLines": [
+        "2500 W Warehouse Way"
+      ],
+      "city": "Salt Lake City",
+      "stateOrProvinceCode": "UT",
+      "postalCode": "84104",
+      "countryCode": "US",
+      "residential": false
+    }
+  },
+  "recipient": {
+    "personName": "Jane Sample",
+    "phoneNumber": "8015550199",
+    "address": {
+      "streetLines": [
+        "100 Main St"
+      ],
+      "city": "Provo",
+      "stateOrProvinceCode": "UT",
+      "postalCode": "84601",
+      "countryCode": "US",
+      "residential": true
+    }
+  },
+  "references": {
+    "orderId": "1022",
+    "externalOrderId": "A-5001",
+    "shipmentId": "10310"
+  },
+  "packages": [
+    {
+      "packageId": "00001",
+      "weight": 2.4,
+      "weightUnit": "LB"
+    },
+    {
+      "packageId": "00002",
+      "weight": 5.1,
+      "weightUnit": "LB"
+    }
+  ]
+}

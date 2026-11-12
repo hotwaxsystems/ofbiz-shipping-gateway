@@ -15,9 +15,13 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 | One carrier | `src/main/groovy/co/hotwax/shippinggateway/<carrier>/`, such as `fedex/` |
 | Tests | `testdef/` and `src/test/groovy/` |
 | Saved carrier replies | `src/test/resources/<carrier>/`, one file per scenario |
+| Sample packets | `src/test/resources/packets/` |
 
 ## How to write code
 
+- Services take a fully resolved packet and return a result packet, as the design defines.
+- Never read the caller's business records, such as shipments, packages, addresses or orders. Read only the plugin's own records: accounts, logins, service rows, tokens and the call log.
+- Never write to the caller's records. Return the result, and the caller saves it.
 - Services are written in Groovy, using OFBiz's Groovy service style.
 - No comments in code. Names and small steps say what the code does. A service keeps its short `<description>`.
 - Use OFBiz trunk records first. Add a record only when trunk has none, as the design says.

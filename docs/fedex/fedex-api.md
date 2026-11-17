@@ -185,4 +185,4 @@ International shipments also need customs details. They are out of scope for the
 
 ## Sample replies
 
-Test replies live in `src/test/resources/fedex/`, one file per scenario. They follow FedEx's published spec shapes, with made-up data. Replace each with a real test-system reply in issue #13, after taking out account numbers.
+Sample replies are not kept in the repository.

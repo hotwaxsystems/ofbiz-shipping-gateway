@@ -1,8 +1,0 @@
-{
-  "transactionId": "t-2002",
-  "output": {
-    "cancelledShipment": false,
-    "cancelledHistory": false,
-    "message": "Shipment cannot be cancelled. It has already been picked up."
-  }
-}

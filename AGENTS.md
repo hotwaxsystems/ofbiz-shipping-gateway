@@ -13,9 +13,6 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 | Service definitions | `servicedef/services.xml` |
 | Shared services | `src/main/groovy/co/hotwax/shippinggateway/` |
 | One carrier | `src/main/groovy/co/hotwax/shippinggateway/<carrier>/`, such as `fedex/` |
-| Tests | `testdef/` and `src/test/groovy/` |
-| Saved carrier replies | `src/test/resources/<carrier>/`, one file per scenario |
-| Sample packets | `src/test/resources/packets/` |
 
 ## How to write code
 
@@ -51,7 +48,6 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 
 ## Tests
 
-- How tests use the sample files: `docs/testing.md`.
 - Every issue's "Done when" list becomes tests.
 - Tests use the saved replies. No automatic test calls a real carrier.
 - Run the plugin's tests with `./gradlew "ofbiz --test component=shippinggateway"` from the OFBiz checkout.

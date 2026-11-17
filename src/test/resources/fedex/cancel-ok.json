@@ -1,8 +1,0 @@
-{
-  "transactionId": "t-2001",
-  "output": {
-    "cancelledShipment": true,
-    "cancelledHistory": true,
-    "successMessage": "Success"
-  }
-}

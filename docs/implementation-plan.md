@@ -16,7 +16,7 @@ It builds on the [requirements](requirements.md) and the [design](design.md).
 These come from earlier FedEx integrations at HotWax, and from the fixes they needed.
 
 - Write numbers plainly in carrier requests. A weight of 1234.5 must never become `1,234.5`.
-- Build reply readers from real carrier replies, saved as test files. Never guess a field name.
+- Build reply readers from real or published carrier replies. Never guess a field name.
 - Never fall back to a default carrier service. A missing service code is an error.
 - Keep the login token for each carrier account. Clear it when the account changes.
 - Every carrier error has one shape: the carrier's status code and its reason.
@@ -46,7 +46,7 @@ Build:
 - Each shared service finds the account, finds the carrier's service, and calls it in its own transaction.
 - `voidShipmentLabels` refuses a shipped shipment.
 
-Done when a test carrier, made only for tests, is called through each shared service.
+Done when each shared service, run in a local OFBiz, finds the account and calls the carrier service set for it.
 
 ### 3. HTTP client, call log and error shape
 
@@ -57,18 +57,13 @@ Build:
 
 Done when a failed call is in the call log and the caller gets the carrier's reason.
 
-### 4. Test kit with saved replies
+### 4. Dropped
 
-Build:
-- A way for tests to replace the HTTP client with one that returns saved replies from files.
-- A folder layout for saved replies: one folder per carrier, one file per scenario.
-- Shared test data: a made-up business, store, warehouse, customer address and shipment with boxes.
-
-Done when a test runs a shared service end to end, with no network.
+The repository holds no tests, so no test kit is built.
 
 ## Part 2. Carrier template: FedEx
 
-Tasks 5 to 11, with 7a, carry the label `carrier template`. The next carrier copies them.
+Tasks 5 to 11, with 7a and without 10, carry the label `carrier template`. The next carrier copies them.
 
 ### 5. Carrier seed data
 
@@ -92,7 +87,7 @@ Done when two accounts get two tokens, and a changed secret gets a new token.
 
 Build `fedexCheckAccount`. It gets a token, then makes one small FedEx call that needs the account number.
 
-Done when the saved-reply tests pass for: check passed, wrong secret, wrong account number.
+Done when a local check gives the right result for: check passed, wrong secret, wrong account number.
 
 ### 7a. Address check
 
@@ -102,7 +97,7 @@ Build `fedexCheckAddress` with FedEx's address validation API:
 - Return `VALID`, `INVALID` or `NOT_CHECKED`, the corrected form when it differs, and FedEx's reasons.
 - Never fail an address on the city spelling alone.
 
-Done when the saved-reply tests pass for: good address, undeliverable address, city spelled differently, corrected form with ZIP+4, and FedEx not answering.
+Done when a local check gives the right result for: good address, undeliverable address, city spelled differently, corrected form with ZIP+4, and FedEx not answering.
 
 ### 8. Label request
 
@@ -112,7 +107,7 @@ Build `fedexRequestShipmentLabels`:
 - Save to `ShipmentRouteSegment` and `ShipmentPackageRouteSeg`, and move the route to accepted.
 - The label format comes from the request. It can be PNG, PDF or ZPL.
 
-Done when the saved-reply tests pass for: one box, two boxes, and FedEx refusing an address.
+Done when a local check gives the right result for: one box, two boxes, and FedEx refusing an address.
 
 ### 9. Void
 
@@ -120,13 +115,11 @@ Build:
 - `fedexVoidShipmentLabels`. It cancels every box's label at FedEx and moves the route to voided.
 - An automatic void when a shipment with labels is cancelled.
 
-Done when the saved-reply tests pass for: void, void after shipping refused, and void on cancel.
+Done when a local check gives the right result for: void, void after shipping refused, and void on cancel.
 
-### 10. Saved replies and scenario tests
+### 10. Dropped
 
-Build one test for each scenario in the requirements, using saved FedEx replies.
-
-Done when every scenario in the requirements has a passing test.
+The repository holds no tests. Task 11 runs every scenario against FedEx's test system.
 
 ### 11. Manual test on FedEx's test system
 
@@ -135,7 +128,6 @@ Needs a FedEx developer account and test keys.
 Do:
 - Set up a test account in a local OFBiz.
 - Run each scenario against FedEx's test system.
-- Save any new real replies as test files, without account numbers or keys.
 - Print one ZPL label and one PDF label, and check the barcode scans.
 
 Done when each scenario passes against FedEx, and the results are noted in the issue.
@@ -147,7 +139,7 @@ Done when each scenario passes against FedEx, and the results are noted in the i
 Write a skill in coding-agent-for-ofbiz. It walks a coding agent through tasks 5 to 11, with 7a, for a new carrier:
 - the records and services to add, with the FedEx code as the example;
 - the rules above;
-- how to save carrier replies and write the tests;
+- how to check each operation in a local OFBiz against the carrier's test system;
 - the checks before a pull request.
 
 Done when the skill is merged in coding-agent-for-ofbiz.
@@ -171,8 +163,8 @@ Do:
   - Saturday delivery is set when the order's estimated delivery date is a Saturday.
   - No UPS key is written in seed data.
 
-Done when UPS passes its tests with no help beyond the skill, and the skill covers every point above.
+Done when every UPS scenario passes a local check with no help beyond the skill, and the skill covers every point above.
 
 ## Order
 
-Tasks 1 to 4 come first. Tasks 5 to 10 follow in order, with 7a after 7. Task 11 waits for the FedEx developer account. Task 12 starts after task 10. Task 13 comes last.
+Tasks 1 to 3 come first. Tasks 5 to 9 follow in order, with 7a after 7. Tasks 6 to 11 need the FedEx developer account and test keys. Task 12 starts after task 11. Task 13 comes last.

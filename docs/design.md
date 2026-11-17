@@ -196,11 +196,12 @@ The void runs after the shipment change commits, so a carrier error never undoes
 - The secret is encrypted and never returned, logged or searched by.
 - Nothing in the plugin knows about the owner of an account. An application that needs owners, such as a warehouse serving many merchants, adds that itself.
 
-## Tests
+## Checks
 
-- Automatic tests replace the FedEx client with one that returns saved FedEx replies. They never call FedEx.
-- Saved replies use made-up accounts and addresses.
-- A person tests against FedEx's test system by hand before each release.
+- The repository holds no automatic tests.
+- A developer checks each change in a local OFBiz, against FedEx's test system.
+- Checks use made-up accounts and addresses.
+- A person runs every scenario against FedEx's test system before each release.
 
 ## Points for the design review
 

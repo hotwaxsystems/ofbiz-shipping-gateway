@@ -24,7 +24,7 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 - No comments in code. Names and small steps say what the code does. A service keeps its short `<description>`.
 - Use OFBiz trunk records first. Add a record only when trunk has none, as the design says.
 - One shared contract. Code outside a carrier's package never names a carrier.
-- HTTP calls go through the plugin's one HTTP client, so tests can replace it with saved replies.
+- HTTP calls go through the plugin's one HTTP client.
 - Write numbers into carrier requests as plain digits, never with a thousands comma.
 - Build reply readers from real or published carrier replies. Never guess a field name.
 - Never fall back to a default carrier service. A missing service code is an error.
@@ -42,15 +42,16 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 
 ## Secrets and data
 
-- Never write a key, secret or token to a log, the call log, a reply or a test file.
+- Never write a key, secret or token to a log, the call log or a reply.
 - Test data uses made-up businesses, people and addresses only.
-- Real carrier replies are saved only after account numbers and keys are removed.
+- A real carrier reply quoted in a document has its account numbers and keys removed.
 
-## Tests
+## Checks
 
-- Every issue's "Done when" list becomes tests.
-- Tests use the saved replies. No automatic test calls a real carrier.
-- Run the plugin's tests with `./gradlew "ofbiz --test component=shippinggateway"` from the OFBiz checkout.
+- The repository holds no tests: no `src/test`, no `testdef`, no test suite in `ofbiz-component.xml`.
+- Check each issue's "Done when" list by running it in a local OFBiz.
+- Local checks call the carrier's test system, never the live one.
+- Report what you ran and what came back in the pull request.
 
 ## Changes
 

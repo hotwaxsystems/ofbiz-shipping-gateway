@@ -315,12 +315,13 @@ For a warehouse application, such as the WMS:
 - The secret is encrypted and never returned, logged or searched by.
 - Nothing in the plugin knows about the owner of an account. An application that needs owners, such as a warehouse serving many merchants, adds that itself.
 
-## Tests
+## Checks
 
-- Tests send packets and check result packets. They need no shipment or order records.
-- The FedEx client is replaced with one that returns saved FedEx replies. No test calls FedEx.
-- Saved replies use made-up accounts and addresses.
-- A person tests against FedEx's test system by hand before each release.
+- The repository holds no automatic tests.
+- A developer checks each change by sending packets to the services in a local OFBiz. No shipment or order records are needed.
+- Local checks call FedEx's test system, never the live one.
+- Checks use made-up accounts and addresses.
+- A person runs every scenario against FedEx's test system before each release.
 
 ## Decisions
 

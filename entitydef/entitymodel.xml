@@ -20,12 +20,33 @@ under the License.
 
 <entitymodel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://ofbiz.apache.org/dtds/entitymodel.xsd">
-    <!-- ========================================================= -->
-    <!-- ======================== Defaults ======================= -->
-    <!-- ========================================================= -->
     <title>Entity of ShippingGateway Component</title>
     <description>None</description>
     <copyright></copyright>
     <version></version>
 
+    <entity entity-name="ShipmentGatewayAuth" package-name="co.hotwax.shippinggateway"
+            title="The login for one carrier account">
+        <field name="shipmentGatewayConfigId" type="id"/>
+        <field name="ownerPartyId" type="id" enable-audit-log="true"/>
+        <field name="authTypeEnumId" type="id" enable-audit-log="true"/>
+        <field name="testMode" type="indicator" enable-audit-log="true"/>
+        <field name="baseUrl" type="url" enable-audit-log="true"/>
+        <field name="accountNumber" type="short-varchar" enable-audit-log="true"/>
+        <field name="username" type="value" enable-audit-log="true"/>
+        <field name="password" type="value" encrypt="true"/>
+        <field name="publicKey" type="value" enable-audit-log="true"/>
+        <field name="authHeaderName" type="short-varchar" enable-audit-log="true"/>
+        <field name="description" type="description"/>
+        <prim-key field="shipmentGatewayConfigId"/>
+        <relation type="one" fk-name="SG_AUTH_CONFIG" rel-entity-name="ShipmentGatewayConfig">
+            <key-map field-name="shipmentGatewayConfigId"/>
+        </relation>
+        <relation type="one" fk-name="SG_AUTH_OWNER" title="Owner" rel-entity-name="Party">
+            <key-map field-name="ownerPartyId" rel-field-name="partyId"/>
+        </relation>
+        <relation type="one" fk-name="SG_AUTH_TYPE" title="AuthType" rel-entity-name="Enumeration">
+            <key-map field-name="authTypeEnumId" rel-field-name="enumId"/>
+        </relation>
+    </entity>
 </entitymodel>

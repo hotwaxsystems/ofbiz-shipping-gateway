@@ -1,7 +1,7 @@
 # FedEx API reference
 
 What the FedEx package calls, and how each packet field fills a FedEx field.
-The package reads only the packet and its own account record. It never reads shipment, address or order records.
+The package reads only the packet and the account's settings. It never reads shipment, address or order records.
 The source for every field is FedEx's published REST API specs. Check a field against FedEx's developer portal before relying on it.
 
 ## Addresses and login
@@ -11,7 +11,7 @@ The source for every field is FedEx's published REST API specs. Check a field ag
 | Test | `https://apis-sandbox.fedex.com` |
 | Live | `https://apis.fedex.com` |
 
-The address comes from the `SystemProperty` rows `fedex.url.test` and `fedex.url.live`. The account's `testMode` picks one.
+The address comes from the `SystemProperty` rows `fedex.url.test` and `fedex.url.live`. The account's `{shipmentGatewayConfigId}.testMode` row picks one.
 
 Login is OAuth client credentials:
 
@@ -26,10 +26,10 @@ The reply has `access_token` and `expires_in`, about 3600 seconds.
 Every other call sends `Authorization: Bearer {access_token}` and `Content-Type: application/json`.
 
 Token rules:
-- Keep one token per carrier account, in an OFBiz cache keyed by `shipmentGatewayConfigId`.
+- `getShipmentGatewayToken` keeps one token per carrier account, in an OFBiz cache keyed by `shipmentGatewayConfigId`.
 - Let the cached token expire 5 minutes before FedEx's expiry.
-- Clear the token when the account changes.
-- On a 401 reply, get a new token once and repeat the call once.
+- `clearShipmentGatewayToken` drops it when the login changes.
+- On a 401 reply, the request helper gets a new token once and repeats the call once. Other failures are returned to the caller, which decides when to try again.
 
 ## Calls
 
@@ -40,7 +40,7 @@ Token rules:
 | Label request | `POST /ship/v1/shipments` | `fedexRequestShipmentLabels` |
 | Void | `PUT /ship/v1/shipments/cancel` | `fedexVoidShipmentLabels` |
 
-FedEx has no "check my account" call. A rate quote needs the account number, so a small quote between two of the facility's own addresses proves the login and the account.
+FedEx has no "check my account" call. A rate quote needs the account number, so a small quote between the two addresses in the account check packet proves the login and the account.
 
 ## Label request
 
@@ -52,7 +52,7 @@ All boxes of one shipment go in one request. FedEx returns one master tracking n
 
 | FedEx field | Required | Packet field |
 | --- | --- | --- |
-| `accountNumber.value` | Yes | `ShipmentGatewayFedex.accountNumber`, for the packet's `shipmentGatewayConfigId` |
+| `accountNumber.value` | Yes | `SystemProperty` `shippinggateway` / `{shipmentGatewayConfigId}.accountNumber` |
 | `labelResponseOptions` | Yes | Always `LABEL`, so the label comes back in the reply |
 | `requestedShipment.shipDatestamp` | No | `dateOfSale` |
 | `requestedShipment.shipper.contact.companyName` | Yes | `companyAddress.companyName` |
@@ -112,7 +112,7 @@ An alert of type `NOTE` or `WARNING` is not a failure. Example: `SHIP.RECIPIENT.
 
 | FedEx field | Source |
 | --- | --- |
-| `accountNumber.value` | `ShipmentGatewayFedex.accountNumber` |
+| `accountNumber.value` | `SystemProperty` `shippinggateway` / `{shipmentGatewayConfigId}.accountNumber` |
 | `trackingNumber` | `trackingNumber`, the master tracking number |
 | `deletionControl` | `DELETE_ALL_PACKAGES` |
 
@@ -160,7 +160,7 @@ A failed call returns an HTTP 4xx or 5xx code and a body like:
 | 429 or 503 | Fail this try, and try again later with a growing wait |
 | 500 | Fail this try, and try again later |
 
-Every call, failed or not, writes a `ShipmentGatewayResponse` row without the token, the secret or label images.
+Every call, failed or not, is written to the account's call log file, without the token, the secret or label images. A timeout returns `callOutcome` `TIMED_OUT`.
 
 ## Service codes
 
@@ -180,7 +180,7 @@ The plugin seeds these `CarrierShipmentMethod` rows for FedEx, from FedEx's serv
 | `INTERNAT_PRI` | `FEDEX_INTERNATIONAL_PRIORITY` | International, including Canada |
 
 The method type ids are trunk's own. Trunk has them only in demo and setup data, so the plugin seeds the ones it uses.
-Trunk's demo data also has older FedEx codes, such as `FEDEX2DAY`. The plugin's seed replaces them.
+Trunk's setup and demo data also have older FedEx codes, such as `FIRSTOVERNIGHT`. The plugin seeds only the methods above; a caller uses only these.
 International shipments also need customs details. They are out of scope for the first release.
 
 ## Sample replies

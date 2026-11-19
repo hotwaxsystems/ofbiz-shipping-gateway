@@ -11,7 +11,9 @@ The source for every field is FedEx's published REST API specs. Check a field ag
 | Test | `https://apis-sandbox.fedex.com` |
 | Live | `https://apis.fedex.com` |
 
-The address comes from the `SystemProperty` rows `fedex.url.test` and `fedex.url.live`. The account's `{shipmentGatewayConfigId}.testMode` row picks one.
+The address is the login's `ShipmentGatewayAuth.baseUrl`. When it is empty, it comes from the `SystemProperty` rows `fedex.url.test` and `fedex.url.live`, and the login's `testMode` picks one.
+
+A FedEx login has `authTypeEnumId` `SGA_OAUTH_CLIENT`: `publicKey` is the API key and `password` is the secret. Both are stored encrypted.
 
 Login is OAuth client credentials:
 
@@ -19,7 +21,7 @@ Login is OAuth client credentials:
 POST /oauth/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=client_credentials&client_id={apiKey}&client_secret={apiSecret}
+grant_type=client_credentials&client_id={publicKey}&client_secret={password}
 ```
 
 The reply has `access_token` and `expires_in`, about 3600 seconds.
@@ -52,7 +54,7 @@ All boxes of one shipment go in one request. FedEx returns one master tracking n
 
 | FedEx field | Required | Packet field |
 | --- | --- | --- |
-| `accountNumber.value` | Yes | `SystemProperty` `shippinggateway` / `{shipmentGatewayConfigId}.accountNumber` |
+| `accountNumber.value` | Yes | `ShipmentGatewayAuth.accountNumber` for the packet's `shipmentGatewayConfigId` |
 | `labelResponseOptions` | Yes | Always `LABEL`, so the label comes back in the reply |
 | `requestedShipment.shipDatestamp` | No | `dateOfSale` |
 | `requestedShipment.shipper.contact.companyName` | Yes | `companyAddress.companyName` |
@@ -112,7 +114,7 @@ An alert of type `NOTE` or `WARNING` is not a failure. Example: `SHIP.RECIPIENT.
 
 | FedEx field | Source |
 | --- | --- |
-| `accountNumber.value` | `SystemProperty` `shippinggateway` / `{shipmentGatewayConfigId}.accountNumber` |
+| `accountNumber.value` | `ShipmentGatewayAuth.accountNumber` |
 | `trackingNumber` | `trackingNumber`, the master tracking number |
 | `deletionControl` | `DELETE_ALL_PACKAGES` |
 

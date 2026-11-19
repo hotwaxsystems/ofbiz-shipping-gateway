@@ -15,8 +15,8 @@ It builds on the [requirements](requirements.md) and the [design](design.md).
 
 These come from earlier FedEx integrations at HotWax, and from the fixes they needed.
 
-- Services are MiniLang. Only the two helpers in task 2 are Java.
-- The plugin adds no entity. It uses the trunk records the design names.
+- Services are MiniLang. Only the three Java classes in task 2 are Java.
+- The plugin adds one entity, `ShipmentGatewayAuth`, for the login. Every other record is a trunk record the design names.
 - The plugin never reads or writes the caller's business records. It returns results, and the caller saves them.
 - Write numbers plainly in carrier requests. A weight of 1234.5 must never become `1,234.5`.
 - Build reply readers from real or published carrier replies. Never guess a field name.
@@ -35,15 +35,18 @@ These come from earlier FedEx integrations at HotWax, and from the fixes they ne
 ### 1. Seed data
 
 Build:
+- The `ShipmentGatewayAuth` entity, with its audited fields, as the design defines.
+- Login types `SGA_OAUTH_CLIENT`, `SGA_BASIC` and `SGA_API_KEY_HEADER`, as `Enumeration` rows.
 - Operation types `SHIP_LABEL`, `SHIP_VOID`, `SHIP_ACCOUNT_CHECK` and `SHIP_ADDRESS_CHECK`, as `CustomMethodType` rows.
 
-Done when the plugin loads on OFBiz trunk and the seed data loads with no errors.
+Done when the plugin loads on OFBiz trunk, the table is created, and the seed data loads with no errors.
 
 ### 2. Java helpers
 
 Build, in `src/main/java`, with no carrier name in the code:
 - `sendShipmentGatewayRequest`: sends GET, POST, PUT or DELETE with headers and a JSON or form body. Turns the body map into JSON with the shared Jackson mapper. Returns the status code, the reply as a map, and `callOutcome`: `ANSWERED`, `TIMED_OUT` or `NOT_REACHED`.
-- `getShipmentGatewayToken` and `clearShipmentGatewayToken`: read the key and secret from `SystemProperty`, get a token from the carrier's token address, keep it in an OFBiz cache per account until 5 minutes before it expires.
+- `getShipmentGatewayToken` and `clearShipmentGatewayToken`: read the key and secret from `ShipmentGatewayAuth`, get a token from the carrier's token address, keep it in an OFBiz cache per account until 5 minutes before it expires.
+- `ShipmentGatewayCredentials`: static `encryptKey` and `decryptKey` for `publicKey`, with trunk's `delegator.encryptFieldValue` and `decryptFieldValue` on entity name `ShipmentGatewayAuth` and `EncryptMethod.TRUE`. `encryptKey` returns the saved text when the key is unchanged.
 
 Done when a local run shows a GET, a POST and a PUT to a test address, a timeout reported as `TIMED_OUT`, and a second token request served from the cache.
 
@@ -84,10 +87,10 @@ Done when the seed loads on a database with only trunk seed data, and every FedE
 ### 6. Login and token
 
 Build:
-- `saveShipmentGatewayLogin`, gated by `SHIPPINGGATEWAY_ADMIN`. It writes `{id}.accountNumber` and `{id}.testMode` as `SystemProperty` rows, records `{id}.apiKey` and `{id}.apiSecret` with trunk's `createEncryptedSecret` as the system user, and clears the token.
+- `saveShipmentGatewayLogin`, gated by `SHIPPINGGATEWAY_ADMIN`. It creates or updates the `ShipmentGatewayAuth` row with its owner, type, mode, address, account number, user name and password, encrypts `publicKey` when given, and clears the token.
 - The FedEx token call through `getShipmentGatewayToken`.
 
-Done when two accounts get two tokens, the secret is stored as `ENC(...)`, and a changed secret gets a new token.
+Done when two accounts get two tokens, `password` and `publicKey` are stored encrypted, a change of mode shows in `EntityAuditLog` with who and when, no password value is in `EntityAuditLog`, and a changed secret gets a new token.
 
 ### 7. Account check
 
@@ -139,7 +142,7 @@ Done when each scenario passes against FedEx.
 
 Write a skill in coding-agent-for-ofbiz. It walks a coding agent through tasks 5 to 10, with 7a, for a new carrier:
 - the seed rows and MiniLang services to add, with the FedEx code as the example;
-- how to use the two Java helpers, and that a carrier adds no Java;
+- how to use the three Java classes, and that a carrier adds no Java;
 - the rules above;
 - how to check each task in a local OFBiz.
 

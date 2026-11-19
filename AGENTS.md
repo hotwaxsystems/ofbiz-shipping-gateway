@@ -8,24 +8,26 @@ For FedEx, read `docs/fedex/fedex-api.md`.
 
 | What | Where |
 | --- | --- |
+| The login entity | `entitydef/entitymodel.xml` |
 | Seed data | `data/` |
 | Service definitions | `servicedef/services.xml` |
 | Shared services | `minilang/ShippingGatewayServices.xml` |
 | One carrier | `minilang/<carrier>/<Carrier>Services.xml`, such as `minilang/fedex/FedexServices.xml` |
-| The two helpers | `src/main/java/co/hotwax/shippinggateway/` |
+| The Java helpers | `src/main/java/co/hotwax/shippinggateway/` |
 
-The plugin adds no entity. Its `entitydef/entitymodel.xml` stays empty.
+The plugin adds one entity, `ShipmentGatewayAuth`, for the login. Add no other entity without a design change first.
 
 ## How to write code
 
-- Services are written in MiniLang. Only the request helper and the token helper are Java, and a carrier adds no Java.
+- Services are written in MiniLang. Only the request helper, the token helper and `ShipmentGatewayCredentials` are Java, and a carrier adds no Java.
 - Services take a fully resolved packet and return a result packet, as the design defines.
 - Packets are the same for every carrier, with unigate's field names. A carrier never adds its own packet fields; a new field goes in the design first.
-- Never read the caller's business records, such as shipments, packages, addresses or orders. Read only trunk setup records: `ShipmentGatewayConfig`, `SystemProperty`, `CustomMethod`.
+- Never read the caller's business records, such as shipments, packages, addresses or orders. Read only setup records: `ShipmentGatewayConfig`, `ShipmentGatewayAuth`, `SystemProperty`, `CustomMethod`.
 - Never write to the caller's records. Return the result, and the caller saves it.
 - Find a carrier's service by its `CustomMethod` id: the carrier type, `_`, then the operation, such as `FEDEX_SHIP_LABEL`.
 - Every HTTP call goes through `sendShipmentGatewayRequest`. It also writes the call log file.
-- Never read the API key or secret in MiniLang. The token helper reads them.
+- Never read a saved key or secret in MiniLang, except that `saveShipmentGatewayLogin` loads the row to update it. It never logs or returns the values.
+- Never put `enable-audit-log` on an `encrypt="true"` field. The change log would store the plain value.
 - No comments in code. Names and small steps say what the code does. A service keeps its short `<description>`.
 - Write numbers into carrier requests as numbers in the request map, never as formatted text.
 - Build reply readers from real or published carrier replies. Never guess a field name.

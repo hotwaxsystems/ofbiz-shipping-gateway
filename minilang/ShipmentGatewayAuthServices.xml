@@ -43,6 +43,44 @@ under the License.
                 <store-value value-field="savedLogin"/>
             </else>
         </if-empty>
+
+        <set field="clearTokenInput.shipmentGatewayConfigId" from-field="parameters.shipmentGatewayConfigId"/>
+        <call-service service-name="clearShipmentGatewayToken" in-map-name="clearTokenInput"/>
+    </simple-method>
+
+    <simple-method method-name="getShipmentGatewayConnection" short-description="Return the address and the public login fields of one carrier account">
+        <entity-one entity-name="ShipmentGatewayConfig" value-field="shipmentGatewayConfig"/>
+        <if-empty field="shipmentGatewayConfig">
+            <add-error><fail-message message="Carrier account ${parameters.shipmentGatewayConfigId} is not found."/></add-error>
+            <check-errors/>
+        </if-empty>
+        <entity-one entity-name="ShipmentGatewayAuth" value-field="login"/>
+        <if-empty field="login">
+            <add-error><fail-message message="Carrier account ${parameters.shipmentGatewayConfigId} has no login."/></add-error>
+            <check-errors/>
+        </if-empty>
+
+        <set field="baseUrl" from-field="login.baseUrl"/>
+        <if-empty field="baseUrl">
+            <if-compare field="login.testMode" operator="equals" value="N">
+                <set field="baseUrlProperty" value="${shipmentGatewayConfig.shipmentGatewayConfTypeId}.url.live"/>
+                <else>
+                    <set field="baseUrlProperty" value="${shipmentGatewayConfig.shipmentGatewayConfTypeId}.url.test"/>
+                </else>
+            </if-compare>
+            <property-to-field field="baseUrl" resource="shippinggateway" property="${baseUrlProperty}" no-locale="true"/>
+        </if-empty>
+        <if-empty field="baseUrl">
+            <add-error><fail-message message="Carrier account ${parameters.shipmentGatewayConfigId} has no address: its login has none and SystemProperty ${baseUrlProperty} is empty."/></add-error>
+            <check-errors/>
+        </if-empty>
+
+        <field-to-result field="shipmentGatewayConfig.shipmentGatewayConfTypeId" result-name="shipmentGatewayConfTypeId"/>
+        <field-to-result field="baseUrl"/>
+        <field-to-result field="login.testMode" result-name="testMode"/>
+        <field-to-result field="login.accountNumber" result-name="accountNumber"/>
+        <field-to-result field="login.authTypeEnumId" result-name="authTypeEnumId"/>
+        <field-to-result field="login.ownerPartyId" result-name="ownerPartyId"/>
     </simple-method>
 
     <simple-method method-name="refuseInvalidLogin" short-description="Refuse a login for an unknown account, an unknown login type or a key that is too long">

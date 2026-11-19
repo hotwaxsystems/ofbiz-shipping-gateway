@@ -23,6 +23,10 @@ under the License.
     <PartyGroup partyId="ACME" groupName="Acme Outdoor"/>
 
     <ShipmentGatewayConfigType shipmentGatewayConfTypeId="FEDEX" hasTable="N" description="FedEx REST API"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.url.test" systemPropertyValue="https://apis-sandbox.fedex.com"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.url.live" systemPropertyValue="https://apis.fedex.com"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.token.path" systemPropertyValue="/oauth/token"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.token.clientAuth" systemPropertyValue="form"/>
     <ShipmentGatewayConfig shipmentGatewayConfigId="10400" shipmentGatewayConfTypeId="FEDEX" description="Acme FedEx"/>
     <ShipmentGatewayAuth shipmentGatewayConfigId="10400" ownerPartyId="ACME" authTypeEnumId="SGA_OAUTH_CLIENT"
             testMode="Y" accountNumber="740561073" description="Acme FedEx test login"/>

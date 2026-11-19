@@ -289,8 +289,10 @@ A later rate interface uses trunk's own `SHIP_EST` type.
     <CarrierShipmentMethod shipmentMethodTypeId="GROUND" partyId="FEDEX" roleTypeId="CARRIER" carrierServiceCode="FEDEX_GROUND"/>
     <CarrierShipmentMethod shipmentMethodTypeId="SECOND_DAY" partyId="FEDEX" roleTypeId="CARRIER" carrierServiceCode="FEDEX_2_DAY"/>
 
-    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="fedex.url.test" systemPropertyValue="https://apis-sandbox.fedex.com"/>
-    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="fedex.url.live" systemPropertyValue="https://apis.fedex.com"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.url.test" systemPropertyValue="https://apis-sandbox.fedex.com"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.url.live" systemPropertyValue="https://apis.fedex.com"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.token.path" systemPropertyValue="/oauth/token"/>
+    <SystemProperty systemResourceId="shippinggateway" systemPropertyId="FEDEX.token.clientAuth" systemPropertyValue="form"/>
 </entity-engine-xml>
 ```
 
@@ -355,11 +357,32 @@ Services are MiniLang (Expert User ruling, 2026-11-19). Three small Java classes
 | --- | --- | --- |
 | Shared services | MiniLang | Check the packet, find the account and the carrier service, call it |
 | Carrier services, such as `fedexRequestShipmentLabels` | MiniLang | Turn the packet into the carrier's request map, call the request helper, read the reply map into the result packet |
-| `sendShipmentGatewayRequest` | Java | Send one HTTP call: GET, POST, PUT or DELETE, with headers and a JSON or form body. Return the status code, the reply as a map, and the call outcome |
-| `getShipmentGatewayToken` | Java | Return a login token for an account. Read the key and secret from `ShipmentGatewayAuth`, call the carrier's token address, keep the token in an OFBiz cache until 5 minutes before it expires |
-| `clearShipmentGatewayToken` | Java | Drop an account's cached token, when its login changes |
+| `getShipmentGatewayConnection` | MiniLang | Return what a carrier service may see for an account: the carrier type, the address, the mode and the account number. No secret is returned |
+| `sendShipmentGatewayRequest` | Java service | Send one HTTP call for an account: GET, POST, PUT or DELETE, with headers and a JSON or form body. Add the login itself. Write the call to the log file. Return the status code, the reply as a map, and the call outcome |
+| `getShipmentGatewayToken` | Java service | Return a login token for an account. Read the key and secret from `ShipmentGatewayAuth`, call the carrier's token address, keep the token in an OFBiz cache until 5 minutes before it expires |
+| `clearShipmentGatewayToken` | Java service | Drop an account's cached token, when its login changes |
 | `ShipmentGatewayCredentials` | Java | Static methods that encrypt and decrypt `publicKey` with trunk's `delegator.encryptFieldValue` and `decryptFieldValue`. The save service calls the encrypt method with `call-class-method` |
 | `saveShipmentGatewayLogin` | MiniLang | Record an account's login, encrypt `publicKey`, then clear its token |
+
+Carrier settings, as `SystemProperty` rows of resource `shippinggateway`, named after the carrier type:
+
+| `systemPropertyId` | Meaning | FedEx value |
+| --- | --- | --- |
+| `{type}.url.test`, `{type}.url.live` | The default address when a login has no `baseUrl`. The login's `testMode` picks one. | `https://apis-sandbox.fedex.com`, `https://apis.fedex.com` |
+| `{type}.token.path` | Where a token login asks for its token | `/oauth/token` |
+| `{type}.token.clientAuth` | How the key and secret are sent to get a token: `form` in the body, or `basic` in an `Authorization` header | `form` |
+
+FedEx sends them in the form body. UPS sends them as a basic `Authorization` header, so the setting keeps one token helper for both.
+
+How the request helper adds the login, by login type:
+
+| Login type | What it adds to each call |
+| --- | --- |
+| `SGA_OAUTH_CLIENT` | `Authorization: Bearer {token}`, from `getShipmentGatewayToken` |
+| `SGA_BASIC` | `Authorization: Basic` with `username` and `password` |
+| `SGA_API_KEY_HEADER` | The header named in `authHeaderName`, with the decrypted `publicKey` |
+
+The log file never gets these headers.
 
 Retries:
 - On a 401 reply, the request helper gets a new token once and repeats the call once.

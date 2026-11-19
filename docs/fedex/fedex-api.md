@@ -11,7 +11,7 @@ The source for every field is FedEx's published REST API specs. Check a field ag
 | Test | `https://apis-sandbox.fedex.com` |
 | Live | `https://apis.fedex.com` |
 
-The address is the login's `ShipmentGatewayAuth.baseUrl`. When it is empty, it comes from the `SystemProperty` rows `fedex.url.test` and `fedex.url.live`, and the login's `testMode` picks one.
+The address is the login's `ShipmentGatewayAuth.baseUrl`. When it is empty, it comes from the `SystemProperty` rows `FEDEX.url.test` and `FEDEX.url.live`, and the login's `testMode` picks one. The token path is `FEDEX.token.path`, and `FEDEX.token.clientAuth` is `form`.
 
 A FedEx login has `authTypeEnumId` `SGA_OAUTH_CLIENT`: `publicKey` is the API key and `password` is the secret. Both are stored encrypted.
 

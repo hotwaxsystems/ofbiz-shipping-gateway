@@ -32,7 +32,7 @@ These come from earlier FedEx integrations at HotWax, and from the fixes they ne
 
 ## Part 1. Shared frame
 
-### 1. Seed data
+### 1. Login entity and seed data
 
 Build:
 - The `ShipmentGatewayAuth` entity, with its audited fields, as the design defines.
@@ -44,7 +44,7 @@ Done when the plugin loads on OFBiz trunk, the table is created, and the seed da
 ### 2. Java helpers
 
 Build, in `src/main/java`, with no carrier name in the code:
-- `sendShipmentGatewayRequest`: sends GET, POST, PUT or DELETE with headers and a JSON or form body. Turns the body map into JSON with the shared Jackson mapper. Returns the status code, the reply as a map, and `callOutcome`: `ANSWERED`, `TIMED_OUT` or `NOT_REACHED`.
+- `sendShipmentGatewayRequest`: sends GET, POST, PUT or DELETE with headers and a JSON or form body. Turns the body map into JSON with its own Jackson mapper, set to write decimals as plain digits and dates as text. Returns the status code, the reply as a map, and `callOutcome`: `ANSWERED`, `TIMED_OUT` or `NOT_REACHED`.
 - `getShipmentGatewayToken` and `clearShipmentGatewayToken`: read the key and secret from `ShipmentGatewayAuth`, get a token from the carrier's token address, keep it in an OFBiz cache per account until 5 minutes before it expires.
 - `ShipmentGatewayCredentials`: static `encryptKey` and `decryptKey` for `publicKey`, with trunk's `delegator.encryptFieldValue` and `decryptFieldValue` on entity name `ShipmentGatewayAuth` and `EncryptMethod.TRUE`. `encryptKey` returns the saved text when the key is unchanged.
 

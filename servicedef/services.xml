@@ -42,4 +42,60 @@ under the License.
         <attribute name="authHeaderName" type="String" mode="IN" optional="true"/>
         <attribute name="description" type="String" mode="IN" optional="true"/>
     </service>
+
+    <service name="getShipmentGatewayConnection" engine="simple" auth="true"
+            location="component://shippinggateway/minilang/ShipmentGatewayAuthServices.xml" invoke="getShipmentGatewayConnection">
+        <description>Return the carrier type, address, mode, account number, login type and owner of one carrier account. The address is the login's own, else the carrier's test or live address from SystemProperty. Never returns the user name, password, public key or key header name.</description>
+        <required-permissions join-type="AND">
+            <check-permission permission="SHIPPINGGATEWAY" action="_VIEW"/>
+        </required-permissions>
+        <attribute name="shipmentGatewayConfigId" type="String" mode="IN" optional="false"/>
+        <attribute name="shipmentGatewayConfTypeId" type="String" mode="OUT" optional="true"/>
+        <attribute name="baseUrl" type="String" mode="OUT" optional="false"/>
+        <attribute name="testMode" type="String" mode="OUT" optional="true"/>
+        <attribute name="accountNumber" type="String" mode="OUT" optional="true"/>
+        <attribute name="authTypeEnumId" type="String" mode="OUT" optional="true"/>
+        <attribute name="ownerPartyId" type="String" mode="OUT" optional="true"/>
+    </service>
+
+    <service name="getShipmentGatewayToken" engine="java" auth="true"
+            location="co.hotwax.shippinggateway.ShipmentGatewayTokenServices" invoke="getShipmentGatewayToken">
+        <description>Return a login token for one carrier account, for the request helper. Keeps the token in memory until 5 minutes before it expires.</description>
+        <required-permissions join-type="AND">
+            <check-permission permission="SHIPPINGGATEWAY" action="_VIEW"/>
+        </required-permissions>
+        <attribute name="shipmentGatewayConfigId" type="String" mode="IN" optional="false"/>
+        <attribute name="accessToken" type="String" mode="OUT" optional="false"/>
+    </service>
+
+    <service name="clearShipmentGatewayToken" engine="java" auth="true"
+            location="co.hotwax.shippinggateway.ShipmentGatewayTokenServices" invoke="clearShipmentGatewayToken">
+        <description>Drop the kept login token of one carrier account, so the next call gets a new one.</description>
+        <required-permissions join-type="AND">
+            <check-permission permission="SHIPPINGGATEWAY" action="_ADMIN"/>
+        </required-permissions>
+        <attribute name="shipmentGatewayConfigId" type="String" mode="IN" optional="false"/>
+    </service>
+
+    <service name="sendShipmentGatewayRequest" engine="java" auth="true"
+            location="co.hotwax.shippinggateway.ShipmentGatewayRequestServices" invoke="sendShipmentGatewayRequest">
+        <description>Send one HTTP call to a carrier account's address with its login, and write the request and reply to the account's call log. A refused or unanswered call is a success result with its callOutcome and statusCode; the caller decides.</description>
+        <required-permissions join-type="AND">
+            <check-permission permission="SHIPPINGGATEWAY" action="_VIEW"/>
+        </required-permissions>
+        <attribute name="shipmentGatewayConfigId" type="String" mode="IN" optional="false"/>
+        <attribute name="httpMethod" type="String" mode="IN" optional="false"/>
+        <attribute name="path" type="String" mode="IN" optional="false"/>
+        <attribute name="requestHeaders" type="Map" mode="IN" optional="true"/>
+        <attribute name="requestBody" type="Map" mode="IN" optional="true"/>
+        <attribute name="formBody" type="Map" mode="IN" optional="true"/>
+        <attribute name="operation" type="String" mode="IN" optional="false"/>
+        <attribute name="referenceIds" type="Map" mode="IN" optional="true"/>
+        <attribute name="logBlankFields" type="List" mode="IN" optional="true"/>
+        <attribute name="timeoutSeconds" type="Integer" mode="IN" optional="true" default-value="30"/>
+        <attribute name="statusCode" type="Integer" mode="OUT" optional="true"/>
+        <attribute name="responseBody" type="Map" mode="OUT" optional="true"/>
+        <attribute name="responseText" type="String" mode="OUT" optional="true"/>
+        <attribute name="callOutcome" type="String" mode="OUT" optional="false"/>
+    </service>
 </services>

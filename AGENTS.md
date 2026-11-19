@@ -25,7 +25,7 @@ The plugin adds one entity, `ShipmentGatewayAuth`, for the login. Add no other e
 - Never read the caller's business records, such as shipments, packages, addresses or orders. Read only setup records: `ShipmentGatewayConfig`, `ShipmentGatewayAuth`, `SystemProperty`, `CustomMethod`.
 - Never write to the caller's records. Return the result, and the caller saves it.
 - Find a carrier's service by its `CustomMethod` id: the carrier type, `_`, then the operation, such as `FEDEX_SHIP_LABEL`.
-- Every HTTP call goes through `sendShipmentGatewayRequest`. It also writes the call log file.
+- Every HTTP call goes through `sendShipmentGatewayRequest`, which writes the call log file. The token call is the one exception: the token helper sends it with the same Java sender and log, because the request helper would try to add a token to it.
 - Never read a saved key or secret in MiniLang, except that `saveShipmentGatewayLogin` loads the row to update it. It never logs or returns the values.
 - Never put `enable-audit-log` on an `encrypt="true"` field. The change log would store the plain value.
 - No comments in code. Names and small steps say what the code does. A service keeps its short `<description>`.

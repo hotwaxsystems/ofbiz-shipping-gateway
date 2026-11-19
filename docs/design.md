@@ -226,7 +226,7 @@ One row per carrier account. It learns from unigate's `ShippingGatewayAuth`: one
 Why each field is stored the way it is:
 - `password` is marked `encrypt="true"`. The entity engine encrypts it, and it is never in the change log. The change log stores values as it reads them, and it reads encrypted fields decrypted (`GenericDelegator.createEntityAuditLogSingle`). Its changes are not recorded (Expert User ruling, 2026-11-19).
 - `publicKey` is a plain field. `saveShipmentGatewayLogin` encrypts it through `ShipmentGatewayCredentials`, and the helpers decrypt it the same way. The change log then stores the encrypted text, so a change is recorded without showing the key (Expert User ruling, 2026-11-19). The idea comes from Maarg, which encrypts some values in code; the call here is trunk's own.
-- `ShipmentGatewayCredentials.encryptKey(Delegator, String)` calls `delegator.encryptFieldValue("ShipmentGatewayAuth", EncryptMethod.TRUE, value)`. `decryptKey(Delegator, String)` calls `decryptFieldValue` with the same entity name and method. MiniLang calls them with `call-class-method`, passing `delegator` with `type="org.apache.ofbiz.entity.Delegator"`.
+- `ShipmentGatewayCredentials.encryptKey(Delegator, String newKey, String savedEncryptedKey)` calls `delegator.encryptFieldValue("ShipmentGatewayAuth", EncryptMethod.TRUE, value)`. `decryptKey(Delegator, String)` calls `decryptFieldValue` with the same entity name and method. MiniLang calls them with `call-class-method`, passing `delegator` with `type="org.apache.ofbiz.entity.Delegator"`.
 - Trunk encrypts with a new random value each time, so the same key gives new text on each save. `encryptKey` takes the saved text too, and returns it unchanged when the new key is the same. So an unchanged key never adds a false "changed" row.
 - `password` and `publicKey` hold at most 150 characters before encryption. The encrypted text must fit the 255-character field. The save service refuses a longer value.
 - Why the secret is in `password` and the key in `publicKey`: unigate kept the FedEx secret in `publicKey` and the key in `username`, both plain. Here the secret is in the entity-encrypted field, and the key in the service-encrypted field, so neither is ever stored or logged as plain text.
@@ -245,7 +245,7 @@ Only the Java helpers read `password` and `publicKey`. `saveShipmentGatewayLogin
 The plugin's service `saveShipmentGatewayLogin` records a login. It needs `SHIPPINGGATEWAY_ADMIN`.
 1. It checks the account exists and the login type is one of the seeded types.
 2. It encrypts `publicKey`, when given, with `delegator.encryptFieldValue`.
-3. It creates or updates the `ShipmentGatewayAuth` row. An empty `password` or `publicKey` on an update keeps the saved one.
+3. It creates or updates the `ShipmentGatewayAuth` row. On an update, an empty value keeps the saved one, for every field. So this service cannot clear a field, such as `baseUrl`.
 4. It calls `clearShipmentGatewayToken`, so the next call gets a new token.
 
 The plugin stores the owner. The caller decides who may use an account. For example, the WMS refuses when one merchant links another merchant's account to its store.

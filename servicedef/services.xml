@@ -24,10 +24,22 @@ under the License.
     <vendor></vendor>
     <version>1.0</version>
 
-    <service name="noSyntaxError" engine="interface">
-        <description>
-            Dummy service to prevent empty files and syntax error - Remove when the 1st real service will be added here 
-        </description>
-    </service> 
-    
+    <service name="saveShipmentGatewayLogin" engine="simple" auth="true"
+            location="component://shippinggateway/minilang/ShipmentGatewayAuthServices.xml" invoke="saveShipmentGatewayLogin">
+        <description>Create or update the login of one carrier account. Encrypts the public key. An empty value on an update keeps the saved one. Never returns the password or the public key.</description>
+        <required-permissions join-type="AND">
+            <check-permission permission="SHIPPINGGATEWAY" action="_ADMIN"/>
+        </required-permissions>
+        <attribute name="shipmentGatewayConfigId" type="String" mode="IN" optional="false"/>
+        <attribute name="ownerPartyId" type="String" mode="IN" optional="true"/>
+        <attribute name="authTypeEnumId" type="String" mode="IN" optional="true"/>
+        <attribute name="testMode" type="String" mode="IN" optional="true"/>
+        <attribute name="baseUrl" type="String" mode="IN" optional="true"/>
+        <attribute name="accountNumber" type="String" mode="IN" optional="true"/>
+        <attribute name="username" type="String" mode="IN" optional="true"/>
+        <attribute name="password" type="String" mode="IN" optional="true"/>
+        <attribute name="publicKey" type="String" mode="IN" optional="true"/>
+        <attribute name="authHeaderName" type="String" mode="IN" optional="true"/>
+        <attribute name="description" type="String" mode="IN" optional="true"/>
+    </service>
 </services>

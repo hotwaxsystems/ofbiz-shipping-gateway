@@ -19,5 +19,13 @@ under the License.
 -->
 
 <entity-engine-xml>
+    <EnumerationType enumTypeId="SHIP_GW_AUTH_TYPE" hasTable="N" description="Shipment gateway login type"/>
+    <Enumeration enumId="SGA_OAUTH_CLIENT" enumTypeId="SHIP_GW_AUTH_TYPE" sequenceId="01" description="Key and secret for a token"/>
+    <Enumeration enumId="SGA_BASIC" enumTypeId="SHIP_GW_AUTH_TYPE" sequenceId="02" description="User name and password"/>
+    <Enumeration enumId="SGA_API_KEY_HEADER" enumTypeId="SHIP_GW_AUTH_TYPE" sequenceId="03" description="Key in a header"/>
 
+    <CustomMethodType customMethodTypeId="SHIP_LABEL" hasTable="N" description="Shipment Gateway label methods"/>
+    <CustomMethodType customMethodTypeId="SHIP_VOID" hasTable="N" description="Shipment Gateway void label methods"/>
+    <CustomMethodType customMethodTypeId="SHIP_ACCOUNT_CHECK" hasTable="N" description="Shipment Gateway account check methods"/>
+    <CustomMethodType customMethodTypeId="SHIP_ADDRESS_CHECK" hasTable="N" description="Shipment Gateway address check methods"/>
 </entity-engine-xml>
